@@ -1,0 +1,11 @@
+.upload_wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.data__button {
+    display: flex;
+    align-items: center;
+}

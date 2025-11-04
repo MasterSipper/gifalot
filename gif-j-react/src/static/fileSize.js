@@ -1,0 +1,1 @@
+export const UploadLimit = 20 * 1000 * 1000;

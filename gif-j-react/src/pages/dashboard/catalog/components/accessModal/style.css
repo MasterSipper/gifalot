@@ -1,0 +1,29 @@
+.modal_access .ant-modal-body {
+    width: 100%;
+    border-top: 2px #DFE6E9 solid;
+    padding: 8px 0;
+}
+
+.modal_access__main {
+    display: flex;
+    align-items: center;
+}
+
+.access__main__block {
+    display: flex;
+    flex-direction: column;
+}
+
+.access__main__block p {
+    text-align: start;
+}
+
+.bottom {
+    margin-top: 10px;
+}
+
+.access__main__block__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

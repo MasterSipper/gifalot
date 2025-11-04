@@ -1,0 +1,9 @@
+.login__page__wrapper{
+    display: flex;
+    align-items:center;
+    justify-content: center;
+    min-height: 100vh;
+}
+.login__page__wrapper img{
+    border-radius: 20px;
+}

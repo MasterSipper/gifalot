@@ -1,0 +1,5 @@
+.loader__page {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+}

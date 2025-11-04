@@ -1,0 +1,155 @@
+import React from "react";
+import {
+  accessOpen,
+  dragOpen,
+  renameOpen,
+  settingsOpen,
+} from "../../../store/modalSlice/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import { FoldersSelector } from "../../../../../store/selectors";
+import { SetFolder } from "../../../../../store/slices/foldersSlice";
+import axiosInstance from "../../../../../helpers/axiosConfig";
+import { collections } from "../../../../../static/api";
+
+import edit from "../../../../../assets/icons/edit.png";
+import settings from "../../../assets/icons/settings.png";
+import lock from "../../../assets/icons/lock.png";
+import unlock from "../../../assets/icons/unlock.png";
+import play from "../../../../../assets/icons/play.png";
+// import share from "../../../../../assets/icons/share.png";
+import list from "../../../../../assets/icons/listItems.png";
+import grid from "../../../../../assets/icons/gridItems.png";
+import shareBlack from "../../../assets/icons/share-fill__black.png";
+
+import "./style.css";
+
+export const CatalogHeader = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { folderItem } = useSelector(FoldersSelector);
+  const [display, setDisplay] = React.useState("grid");
+
+  React.useEffect(() => {}, [folderItem.id]);
+  React.useEffect(() => {
+    setDisplay(folderItem?.view);
+  }, [folderItem?.view]);
+
+  const handleRenameFolder = () => {
+    dispatch(renameOpen());
+  };
+
+  const handleSettingsOpen = () => {
+    dispatch(settingsOpen());
+  };
+
+  const handleCarouselOpen = () => {
+    navigate(`/dashboard/${folderItem.name}/carousel`);
+  };
+
+  const handleDragEnter = (e) => {
+    e.stopPropagation();
+    dispatch(dragOpen());
+  };
+
+  const handleShareCarouselLink = async (e) => {
+    e.stopPropagation();
+    dispatch(accessOpen());
+    // await navigator.clipboard.writeText(`${window.location.href}/carousel`);
+    // notification.success({
+    //   message: "link copied to clipboard",
+    // });
+  };
+
+  const handleChangeView = async (view) => {
+    setDisplay((prevState) => view);
+    await axiosInstance.patch(`${collections}/${folderItem.id}`, {
+      view: view,
+    });
+    const item = {
+      ...folderItem,
+      view: view,
+    };
+    dispatch(SetFolder(item));
+  };
+
+  return (
+    <div className={"catalog__header"} onDragEnter={handleDragEnter}>
+      <div className={"header__section"}>
+        <p className={"section__text"}>{folderItem?.name}</p>
+        <img
+          className={"header__section__img"}
+          width={20}
+          height={20}
+          src={edit}
+          alt="edit"
+          onClick={handleRenameFolder}
+          title={"Edit"}
+        />
+      </div>
+
+      <div className={"header__section"}>
+        {display === "list" ? (
+          <img
+            className={"header__section__img"}
+            width={24}
+            height={24}
+            src={list}
+            alt="place"
+            title={"View"}
+            onClick={() => handleChangeView("grid")}
+          />
+        ) : (
+          <img
+            className={"header__section__img"}
+            src={grid}
+            alt="place"
+            title={"View"}
+            onClick={() => handleChangeView("list")}
+          />
+        )}
+        {folderItem?.private ? (
+          <img src={lock} className={"header__section__private"} alt="lock" />
+        ) : (
+          <img
+            src={unlock}
+            className={"header__section__private"}
+            alt="unlock"
+          />
+        )}
+        <img
+          className={"header__section__img"}
+          src={settings}
+          alt="settings"
+          onClick={handleSettingsOpen}
+          title={"Settings"}
+        />
+      </div>
+
+      <div className={"header__section"}>
+        <img
+          src={shareBlack}
+          className={"header__section__img"}
+          alt="share link"
+          onClick={handleShareCarouselLink}
+          title={"Share link"}
+        />
+
+        <img
+          src={play}
+          className={"header__section__img"}
+          alt="play"
+          onClick={handleCarouselOpen}
+          title={"Play"}
+        />
+        {/*<img*/}
+        {/*  src={share}*/}
+        {/*  alt="share"*/}
+        {/*  className={"header__section__img"}*/}
+        {/*  title={"Share"}*/}
+        {/*/>*/}
+      </div>
+    </div>
+  );
+};

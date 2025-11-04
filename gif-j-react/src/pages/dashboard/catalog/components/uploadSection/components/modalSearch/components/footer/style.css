@@ -1,0 +1,12 @@
+.search_modal__footer {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    bottom: 0;
+}
+
+.search_modal__footer__buttons {
+    display: flex;
+}

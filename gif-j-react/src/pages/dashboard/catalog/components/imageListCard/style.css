@@ -1,0 +1,23 @@
+.image_list_card {
+    position: relative;
+    min-width: 150px;
+    height: 150px;
+}
+
+.image_list_card__img {
+    width: 150px;
+    height: 150px;
+}
+
+.image_list_card__img:hover {
+    cursor: pointer
+}
+
+.image_list_card__hover {
+    min-width: 150px;
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0.8);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 15
+}

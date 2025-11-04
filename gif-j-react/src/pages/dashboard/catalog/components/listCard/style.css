@@ -1,0 +1,11 @@
+.list_card__wrapper{
+    width: 100%;
+    min-height: 166px;
+    box-sizing: border-box;
+    border: 1px solid #DFE6E9;
+    border-radius: 7px;
+    margin-bottom: 16px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+}

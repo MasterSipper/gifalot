@@ -1,0 +1,58 @@
+.add_link__modal .ant-modal-body {
+    padding: 16px 0;
+    border-top: 2px #DFE6E9 solid;
+    border-bottom: 2px #DFE6E9 solid;
+}
+
+.modal_input__section {
+    position: relative;
+    z-index: 1
+}
+
+.values__wrapper {
+    padding: 6px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    max-width: 755px;
+    width: 100%;
+    max-height: 152px;
+    overflow-y: scroll
+}
+
+.values__wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.value__item {
+    display: flex;
+    align-items: center;
+    padding: 3px;
+}
+
+.CloseCircleOutlined {
+    color: red;
+}
+
+
+.add_link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.add_link__button {
+    color: #0010F7;
+}
+
+.add_link__text {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.add_link__text::-webkit-scrollbar {
+    display: none;
+}

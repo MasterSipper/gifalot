@@ -1,0 +1,23 @@
+.modal_edit {
+    width: 532px !important;
+}
+
+.modal_edit .ant-modal-body{
+    width: 100%;
+    border-top: 2px #DFE6E9 solid;
+    border-bottom: 2px #DFE6E9 solid;
+}
+
+.modal_edit__input{
+    margin: 26px 0;
+}
+
+.modal_edit__box{
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal_edit__box p{
+    margin-left: 16px;
+}

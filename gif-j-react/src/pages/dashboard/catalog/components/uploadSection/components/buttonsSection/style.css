@@ -1,0 +1,11 @@
+.upload_section__buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+@media (max-width: 998px) {
+    .upload_section__buttons {
+        flex-wrap: wrap;
+    }
+}

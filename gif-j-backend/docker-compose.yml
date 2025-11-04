@@ -1,0 +1,83 @@
+version: '3.7'
+
+services:
+  redis:
+    hostname: '${REDIS_HOST}'
+    image: 'redis:7.0.10-alpine'
+    entrypoint: 'redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 1024mb --maxmemory-policy allkeys-lru'
+    expose:
+      - '${REDIS_PORT}'
+    networks:
+      - 'gif-j'
+    volumes:
+      - 'redisdata:/data'
+    restart: 'always'
+  postgres:
+    hostname: '${POSTGRES_HOST}'
+    image: 'postgres:15.2-alpine'
+    environment:
+      PG_DATA: '/var/lib/postgresql/data'
+      POSTGRES_HOST: '${POSTGRES_HOST}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_PORT: '${POSTGRES_PORT}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    expose:
+      - '${POSTGRES_PORT}'
+    networks:
+      - 'gif-j'
+    volumes:
+      - 'pgdata:/var/lib/postgresql/data'
+    restart: 'always'
+  app:
+    hostname: '${SERVICE_NAME_STAGE}'
+    build: '.'
+    environment:
+      STAGE: '${STAGE}'
+      AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}'
+      AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}'
+      AWS_REGION: '${AWS_REGION}'
+      S3_BUCKET_NAME: '${S3_BUCKET_NAME}'
+      PORT: '${PORT}'
+      GOOGLE_RECAPTCHA_SECRET_KEY: '${GOOGLE_RECAPTCHA_SECRET_KEY}'
+      GIPHY_API_KEY: '${GIPHY_API_KEY}'
+      MAIL_USER: '${MAIL_USER}'
+      MAIL_PASSWORD: '${MAIL_PASSWORD}'
+      REDIS_HOST: '${REDIS_HOST}'
+      REDIS_PORT: '${REDIS_PORT}'
+      REDIS_PASSWORD: '${REDIS_PASSWORD}'
+      POSTGRES_HOST: '${POSTGRES_HOST}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_PORT: '${POSTGRES_PORT}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      JWT_ACCESS_TOKEN_SECRET: '${JWT_ACCESS_TOKEN_SECRET}'
+      JWT_REFRESH_TOKEN_SECRET: '${JWT_REFRESH_TOKEN_SECRET}'
+    expose:
+      - '${PORT}'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.${SERVICE_NAME_STAGE}.rule=PathPrefix(`/gif-j`)'
+      - 'traefik.http.routers.${SERVICE_NAME_STAGE}.entrypoints=web'
+      # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls=true'
+      # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls.certresolver=le'
+      # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.path=${PATH_PREFIX}/ping'
+      # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.interval=1s'
+      - 'traefik.docker.network=infrastructure-traefik'
+    networks:
+      - 'gif-j'
+      - 'infrastructure-traefik'
+    depends_on:
+      - 'postgres'
+      - 'redis'
+    restart: 'always'
+
+networks:
+  gif-j:
+    driver: bridge
+  infrastructure-traefik:
+    external: true
+
+volumes:
+  pgdata:
+  redisdata:

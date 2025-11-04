@@ -1,0 +1,46 @@
+.folder_item {
+    background: #FFFFFF;
+    border: 1px solid #2D3436;
+    border-radius: 7px;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    min-width: 158px;
+    min-height: 200px;
+    gap: 16px;
+}
+
+.folder_item:hover {
+    cursor: pointer;
+}
+
+.images__section{
+    min-width: 125px;
+    min-height: 125px;
+}
+
+.folder_item img {
+    width: 125px;
+    height: 125px;
+    object-fit: fill;
+}
+
+.icons__section {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icons__section img {
+    width: 20px;
+    height: 20px;
+}
+
+.icons__section img:hover {
+    cursor: pointer;
+}
+
+

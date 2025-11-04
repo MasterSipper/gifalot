@@ -1,0 +1,30 @@
+.setting_modal .ant-modal-body {
+    width: 100%;
+    border-top: 2px #DFE6E9 solid;
+    border-bottom: 2px #DFE6E9 solid;
+    padding: 8px 0;
+}
+
+.setting_modal__box {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.box__input{
+    width: 55px;
+}
+.box__select{
+    width: 120px;
+}
+
+.setting_modal__box p {
+    margin: 0 10px;
+}
+
+.span {
+    color: #0010F7;
+    margin-left: 5px;
+    text-decoration: underline;
+    cursor: pointer;
+}

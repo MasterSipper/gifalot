@@ -1,0 +1,16 @@
+.error__page__wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: center;
+}
+
+.error__page__wrapper h1{
+   font-size: 34px;
+    padding: 24px;
+}
+
+.error__page__wrapper p{
+       padding: 24px;
+}

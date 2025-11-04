@@ -1,0 +1,10 @@
+.grid__container {
+    overflow-y: scroll;
+    behavior: initial;
+    margin: 0!important;
+}
+
+.grid__container::-webkit-scrollbar {
+    display: none;
+}
+

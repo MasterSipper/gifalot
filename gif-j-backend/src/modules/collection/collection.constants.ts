@@ -1,0 +1,4 @@
+export const COLLECTION_CONSTANTS = {
+  LIMIT_PER_USER: 250,
+  LIMIT_PER_PAGE: 50,
+};

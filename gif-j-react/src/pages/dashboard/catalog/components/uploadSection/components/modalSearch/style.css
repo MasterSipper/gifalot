@@ -1,0 +1,45 @@
+.search__modal {
+    width: 75% !important;
+    height: 75% !important;
+
+}
+
+.search__modal .ant-modal-content {
+    height: 100% !important;
+}
+
+.search__modal .ant-modal-body {
+    height: 87%;
+}
+
+.search__modal .ant-modal-body::-webkit-scrollbar {
+    display: none;
+}
+
+.search__modal__form {
+    width: 100%;
+}
+
+.form__search__section {
+    display: flex;
+    flex: 1;
+}
+
+.section__search_input {
+    width: 100%;
+    margin-right: 5px;
+    flex: 8;
+}
+
+
+@media( max-width: 1440px){
+    .search__modal .ant-modal-body {
+        height: 85%;
+    }
+}
+
+@media( max-width: 768px){
+    .search__modal .ant-modal-body {
+        height: 77%;
+    }
+}

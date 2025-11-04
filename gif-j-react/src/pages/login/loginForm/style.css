@@ -1,0 +1,76 @@
+.form {
+    max-width: 600px;
+    margin-left: 80px;
+    min-height: 480px;
+}
+
+.form__header {
+    font-weight: 500;
+    font-size: 42px;
+    line-height: 48px;
+    letter-spacing: -0.02em;
+    color: #2D3436;
+}
+
+.subheader__p {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 21px;
+    letter-spacing: 0.02em;
+    color: #636E72;
+    margin-bottom: 20px;
+}
+
+.input {
+    border-color: #00F7BF;
+}
+
+.inner__section, .form__footer {
+    display: flex;
+    padding: 0;
+}
+
+.inner__section input[type="checkbox"] {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+    color: #2D3436;
+}
+
+.inner__section p {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+    color: #0010F7;
+}
+
+.inner__section p:hover{
+    cursor: pointer;
+}
+
+.footer__create {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 18px;
+    letter-spacing: 0.03em;
+    color: #0010F7;
+}
+
+.footer__p {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+    color: #2D3436;
+}
+
+.footer__create:hover {
+    cursor: pointer;
+}
+
+.logic__btn{
+   width: 100%;
+}
+

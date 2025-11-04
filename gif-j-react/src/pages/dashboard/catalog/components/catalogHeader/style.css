@@ -1,0 +1,28 @@
+
+.catalog__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header__section {
+    display: flex;
+    align-items: center;
+}
+.header__section__img{
+    margin-left: 17px;
+}
+
+.header__section__private{
+    margin-left: 17px;
+}
+
+.header__section__img:hover {
+    cursor: pointer;
+}
+
+.section__text {
+    font-size: 20px;
+    line-height: 24px;
+}

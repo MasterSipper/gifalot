@@ -1,0 +1,3 @@
+export const FAVORITE_CONSTANTS = {
+  LIMIT_PER_PAGE: 50,
+};

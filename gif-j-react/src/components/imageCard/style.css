@@ -1,0 +1,109 @@
+.image_card {
+    position: relative;
+    max-width: 225px;
+    height: 225px;
+}
+
+.image_card__img {
+    border: 1px #DFE6E9 solid;
+    border-radius: 7px;
+    padding: 8px;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 225px;
+    height: 225px;
+}
+
+.image_card__img:hover{
+    cursor: pointer;
+}
+
+
+.fav_gif {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 5%;
+    right: 5%;
+    padding: 4px;
+    transition: all 0.2ms ease-in-out;
+    z-index: 10;
+}
+
+.hover {
+    max-width: 225px;
+    height: 225px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 7px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 15
+}
+
+.preview__link {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    bottom: 4%;
+    right: 45%;
+    padding: 4px;
+    transition: all 0.2ms ease-in-out;
+    z-index: 10;
+}
+
+.preview__link:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
+.preview__remove {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    padding: 4px;
+    transition: all 0.2ms ease-in-out;
+    z-index: 10;
+    color: white;
+}
+
+.preview__remove:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
+
+.preview__gif {
+    position: absolute;
+    top: 45%;
+    left: 35%;
+    color: #F7FAFC;
+    display: flex;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.preview__gif:hover {
+    cursor: pointer;
+}
+
+.preview__gif .icon {
+    margin-right: 5px;
+}
+
+.preview__favorite {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 5%;
+    right: 5%;
+    padding: 4px;
+    transition: all 0.2ms ease-in-out;
+    z-index: 10;
+}
+
+.preview__favorite:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+}

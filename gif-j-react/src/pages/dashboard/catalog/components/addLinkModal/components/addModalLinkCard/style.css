@@ -1,0 +1,15 @@
+.add_modal_link_card {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    flex: 1;
+}
+
+.add_modal_link_card__img {
+    margin: 0 24px;
+}
+
+.add_modal_link_card__a {
+    max-width: 500px;
+    text-decoration: none;
+}

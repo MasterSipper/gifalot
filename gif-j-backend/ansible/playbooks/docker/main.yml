@@ -1,0 +1,44 @@
+---
+- hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    docker_group: docker
+
+  tasks:
+    - name: Add Docker GPG apt key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker
+          - docker.io
+          - docker-compose
+          - docker-registry
+        state: latest
+        update_cache: true
+
+    - name: Ensure Docker deamon is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+
+    - name: Create Docker group "{{ docker_group }}"
+      ansible.builtin.group:
+        name: '{{ docker_group }}'
+        state: present
+
+    - name: Add user "{{ ansible_user }}" to group "{{ docker_group }}"
+      ansible.builtin.user:
+        name: '{{ ansible_user }}'
+        groups: '{{ docker_group }}'
+        append: true
