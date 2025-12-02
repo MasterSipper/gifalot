@@ -7,6 +7,7 @@ import { apiUrl, collections, file } from "../../static/api";
 import axios from "axios";
 import { AnimationHandler } from "../dashboard/carousel/components";
 import { Loader } from "../../components";
+import { normalizeCollectionFiles } from "../../helpers/normalizeCollectionFiles";
 
 import "./style.css";
 
@@ -21,73 +22,58 @@ export const PublicCarousel = () => {
   const [state, setState] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
 
-  const fetchData = () => {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
-    let catalog = null;
+    try {
+      const [catalogResponse, filesResponse] = await Promise.all([
+        axios.get(`${apiUrl}${collections}/${userId}/${folderId}`),
+        axios.get(`${apiUrl}${file}/${userId}/${folderId}`),
+      ]);
 
-    axios
-      .get(`${apiUrl}${collections}/${userId}/${folderId}`)
-      .then((res) => {
-        catalog = res.data;
-      })
-      .catch((err) => {
-        if (err) {
-          setError(true);
-        }
-      });
+      const normalized = normalizeCollectionFiles(
+        catalogResponse.data,
+        filesResponse.data ?? [],
+      );
 
-    axios
-      .get(`${apiUrl}${file}/${userId}/${folderId}`)
-      .then((res) => {
-        const arr = catalog.ranks.reduce((acc, curr) => {
-          const image = res.data.find((img) => img.id === curr);
-          if (image) {
-            const newImage = {
-              ...image,
-              timePerSlide: image.timePerSlide ?? catalog.timePerSlide,
-              transitionType: image.transitionType ?? catalog.transitionType,
-            };
-            acc.push(newImage);
-          }
-
-          return acc;
-        }, []);
-
-        const sorted = res.data
-          .sort((a, b) => a.id - b.id)
-          .map((item) => ({
-            ...item,
-            timePerSlide: item.timePerSlide ?? catalog.timePerSlide,
-            transitionType: item.transitionType ?? catalog.transitionType,
-          }));
-
-        const newArr =
-          catalog.ranks.length > 1 && arr.length >= res.data.length
-            ? arr
-            : sorted;
-
-        setState((prevState) => newArr);
-      })
-      .finally(() => setLoading(false));
-  };
+      setState(normalized);
+      setError(false);
+    } catch (err) {
+      setError(true);
+      setState([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [folderId, userId]);
 
   React.useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   React.useEffect(() => {
-    if (play) {
-      const timer = setInterval(() => {
-        setSlideIndex((prevIndex) => (prevIndex + 1) % state?.length);
-      }, state[slideIndex]?.timePerSlide);
-
-      return () => clearInterval(timer);
+    if (!play || state.length === 0) {
+      return;
     }
-  }, [slideIndex, play]);
+
+    const duration = state[slideIndex]?.timePerSlide || 5000;
+    const timer = setTimeout(() => {
+      setSlideIndex((prevIndex) => (prevIndex + 1) % state.length);
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [play, slideIndex, state]);
+
+  React.useEffect(() => {
+    if (state.length === 0 && slideIndex !== 0) {
+      setSlideIndex(0);
+    } else if (slideIndex >= state.length && state.length > 0) {
+      setSlideIndex(0);
+    }
+  }, [slideIndex, state.length]);
 
   const renderData = () =>
     state?.map((item, index) => {
       const isActive = slideIndex === index;
+      const isVideo = item.mimeType && item.mimeType.startsWith('video/');
 
       return (
         <AnimationHandler
@@ -97,11 +83,23 @@ export const PublicCarousel = () => {
           type={item.transitionType}
           time={item.timePerSlide}
         >
-          <img
-            className={"public_carousel__img"}
-            src={item.url}
-            alt={item.name}
-          />
+          {isVideo ? (
+            <video
+              className={"public_carousel__img"}
+              src={item.url}
+              controls
+              autoPlay
+              muted
+              playsInline
+              loop
+            />
+          ) : (
+            <img
+              className={"public_carousel__img"}
+              src={item.url}
+              alt={item.name}
+            />
+          )}
         </AnimationHandler>
       );
     });

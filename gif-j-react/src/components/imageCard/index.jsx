@@ -14,7 +14,8 @@ import remove from "../../assets/icons/delete-bin-line.png";
 import "./style.css";
 
 export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
-  const { url, id, name, isFavorite, rotation } = item;
+  const { url, id, name, isFavorite, rotation, mimeType } = item;
+  const isVideo = mimeType && mimeType.startsWith('video/');
   const dispatch = useDispatch();
   const { addToFavorite, removeFromFav } = useFavorite();
 
@@ -54,16 +55,31 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
       onMouseLeave={() => setIsHovered(false)}
       className={isHovered ? "hover" : "image_card"}
     >
-      <img
-        src={url}
-        alt={name}
-        className={"image_card__img"}
-        style={{
-          opacity: isHovered ? "0.2" : "1",
-          transform: `rotate(${rotation}deg)`,
-        }}
-        onClick={maskOpen}
-      />
+      {isVideo ? (
+        <video
+          src={url}
+          className={"image_card__img"}
+          style={{
+            opacity: isHovered ? "0.2" : "1",
+            transform: `rotate(${rotation}deg)`,
+          }}
+          onClick={maskOpen}
+          controls
+          muted
+          playsInline
+        />
+      ) : (
+        <img
+          src={url}
+          alt={name}
+          className={"image_card__img"}
+          style={{
+            opacity: isHovered ? "0.2" : "1",
+            transform: `rotate(${rotation}deg)`,
+          }}
+          onClick={maskOpen}
+        />
+      )}
       {isHovered && (
         <>
           {!inMostFav && (
@@ -114,6 +130,7 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
           name={name}
           id={id}
           deg={rotation}
+          mimeType={mimeType}
         />
       )}
     </div>

@@ -36,7 +36,7 @@ export class Collection {
   @Column({ default: true })
   public private: boolean;
 
-  @Column({ default: 4000 })
+  @Column({ default: 5000 })
   public timePerSlide: number;
 
   @Column({
@@ -46,7 +46,7 @@ export class Collection {
   })
   public transitionType: TransitionType;
 
-  @Column({ type: 'character varying', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   public coverImageKey: string | null;
 
   @Column({ type: 'simple-array', nullable: true })

@@ -39,8 +39,11 @@ export class File {
   })
   public transitionType: TransitionType | null;
 
-  @Column({ type: 'character varying', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   public rotation: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  public originalUrl: string | null;
 
   @ManyToOne(() => Collection, (collection) => collection.files, {
     onDelete: 'CASCADE',

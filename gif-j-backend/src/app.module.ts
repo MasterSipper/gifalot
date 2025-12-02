@@ -41,7 +41,15 @@ import { FileModule } from './modules/file/file.module';
     }),
     AwsSdkModule.register({
       isGlobal: true,
-      client: new S3Client({ region: process.env.AWS_REGION }),
+      client: new S3Client({
+        region: process.env.AWS_REGION || 'eu-central-1',
+        endpoint: process.env.S3_ENDPOINT || undefined, // For S3-compatible services like Contabo
+        forcePathStyle: !!process.env.S3_ENDPOINT, // Required for custom endpoints
+        credentials: (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) ? {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        } : undefined,
+      }),
     }),
     GoogleRecaptchaModule.forRootAsync({
       imports: [ConfigModule],
@@ -81,12 +89,12 @@ import { FileModule } from './modules/file/file.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST'),
-        port: configService.get<number>('POSTGRES_PORT'),
-        username: configService.get<string>('POSTGRES_USER'),
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
+        type: 'mysql',
+        host: configService.get<string>('MYSQL_HOST'),
+        port: configService.get<number>('MYSQL_PORT'),
+        username: configService.get<string>('MYSQL_USER'),
+        password: configService.get<string>('MYSQL_PASSWORD'),
+        database: configService.get<string>('MYSQL_DB'),
         entities: [resolve(__dirname, '**/*.entity.{ts,js}')],
         migrations: [resolve(__dirname, 'migrations/*.{ts,js}')],
         migrationsRun: true,

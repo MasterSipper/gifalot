@@ -126,6 +126,7 @@ export const InnerCarouser = () => {
     const renderData = () =>
         folderImages?.map((image, index) => {
             const isActive = index === slideIndex;
+            const isVideo = image?.mimeType && image.mimeType.startsWith('video/');
 
             return (
                 <AnimationHandler
@@ -140,12 +141,25 @@ export const InnerCarouser = () => {
                         // onMouseEnter={handleMouseEnter}
                         // onMouseLeave={handleMouseLeave}
                     >
-                        <img
-                            className={"carousel__item"}
-                            src={image?.url}
-                            alt="carousel item"
-                            onClick={(e) => e.stopPropagation()}
-                        />
+                        {isVideo ? (
+                            <video
+                                className={"carousel__item"}
+                                src={image?.url}
+                                onClick={(e) => e.stopPropagation()}
+                                controls
+                                autoPlay
+                                muted
+                                playsInline
+                                loop
+                            />
+                        ) : (
+                            <img
+                                className={"carousel__item"}
+                                src={image?.url}
+                                alt="carousel item"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        )}
                     </div>
                 </AnimationHandler>
             );

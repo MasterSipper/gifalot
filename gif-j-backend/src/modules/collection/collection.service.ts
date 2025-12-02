@@ -44,28 +44,55 @@ export class CollectionService {
   }
 
   public async listCollection(userId: number, lastId?: number) {
-    return this.collectionRepository
-      .find({
+    try {
+      const collections = await this.collectionRepository.find({
         where: {
           id: MoreThan(lastId ?? 0),
           user: { id: userId },
         },
         take: COLLECTION_CONSTANTS.LIMIT_PER_PAGE,
-      })
-      .then((r) =>
-        Promise.all(
-          r.map(async (collection) => {
-            if (!collection.coverImageKey) {
-              return collection.toAPI();
-            }
-            const url = await this.fileService.getFileUrl(
-              collection.coverImageKey,
-            );
+      });
 
-            return collection.toAPI(url);
-          }),
-        ),
+      return Promise.all(
+        collections.map(async (collection) => {
+          if (!collection.coverImageKey) {
+            return collection.toAPI();
+          }
+          
+          try {
+            // Try to get the first file's original URL as fallback
+            let fallbackUrl: string | null = null;
+            try {
+              const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+              fallbackUrl = firstFile?.originalUrl || null;
+            } catch (fileError) {
+              console.error(`Error getting first file for collection ${collection.id}:`, fileError);
+              // Continue without fallback URL
+            }
+            
+            try {
+              const url = await this.fileService.getFileUrl(
+                collection.coverImageKey,
+                'inline',
+                fallbackUrl,
+              );
+              return collection.toAPI(url);
+            } catch (urlError) {
+              console.error(`Error getting file URL for collection ${collection.id}:`, urlError);
+              // Fallback to original URL or null
+              return collection.toAPI(fallbackUrl ?? undefined);
+            }
+          } catch (error) {
+            console.error(`Error processing collection ${collection.id}:`, error);
+            // Return collection without cover image URL on any error
+            return collection.toAPI();
+          }
+        }),
       );
+    } catch (error) {
+      console.error('Error in listCollection:', error);
+      throw error;
+    }
   }
 
   public async listPublicCollection(date?: string) {
@@ -84,11 +111,25 @@ export class CollectionService {
             if (!collection.coverImageKey) {
               return collection.toAPI();
             }
-            const url = await this.fileService.getFileUrl(
-              collection.coverImageKey,
-            );
+            try {
+              // Try to get the first file's original URL as fallback
+              const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+              const fallbackUrl = firstFile?.originalUrl || null;
+              
+              const url = await this.fileService.getFileUrl(
+                collection.coverImageKey,
+                'inline',
+                fallbackUrl,
+              );
 
-            return collection.toAPI(url);
+              return collection.toAPI(url);
+            } catch (error) {
+              console.error(`Error getting cover image URL for collection ${collection.id}:`, error);
+              // Try to get original URL from first file
+              const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+              const fallbackUrl = firstFile?.originalUrl || null;
+              return collection.toAPI(fallbackUrl ?? undefined);
+            }
           }),
         ),
       );
@@ -123,8 +164,24 @@ export class CollectionService {
       return collection.toAPI();
     }
 
-    const url = await this.fileService.getFileUrl(collection.coverImageKey);
-    return collection.toAPI(url);
+    try {
+      // Try to get the first file's original URL as fallback
+      const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+      const fallbackUrl = firstFile?.originalUrl || null;
+      
+      const url = await this.fileService.getFileUrl(
+        collection.coverImageKey,
+        'inline',
+        fallbackUrl,
+      );
+      return collection.toAPI(url);
+    } catch (error) {
+      console.error(`Error getting cover image URL for collection ${collection.id}:`, error);
+      // Try to get original URL from first file
+      const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+      const fallbackUrl = firstFile?.originalUrl || null;
+      return collection.toAPI(fallbackUrl ?? undefined);
+    }
   }
 
   public async updateCollection(

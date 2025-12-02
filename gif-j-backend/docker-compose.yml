@@ -7,28 +7,29 @@ services:
     entrypoint: 'redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 1024mb --maxmemory-policy allkeys-lru'
     expose:
       - '${REDIS_PORT}'
+    ports:
+      - '${REDIS_PORT}:6379'
     networks:
       - 'gif-j'
     volumes:
       - 'redisdata:/data'
     restart: 'always'
-  postgres:
-    hostname: '${POSTGRES_HOST}'
-    image: 'postgres:15.2-alpine'
+  mysql:
+    hostname: '${MYSQL_HOST}'
+    image: 'mysql:8.0'
     environment:
-      PG_DATA: '/var/lib/postgresql/data'
-      POSTGRES_HOST: '${POSTGRES_HOST}'
-      POSTGRES_USER: '${POSTGRES_USER}'
-      POSTGRES_DB: '${POSTGRES_DB}'
-      POSTGRES_PORT: '${POSTGRES_PORT}'
-      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${MYSQL_PASSWORD}'
+      MYSQL_DATABASE: '${MYSQL_DB}'
     expose:
-      - '${POSTGRES_PORT}'
+      - '${MYSQL_PORT}'
+    ports:
+      - '${MYSQL_PORT}:3306'
     networks:
       - 'gif-j'
     volumes:
-      - 'pgdata:/var/lib/postgresql/data'
+      - 'mysqldata:/var/lib/mysql'
     restart: 'always'
+    command: --default-authentication-plugin=mysql_native_password
   app:
     hostname: '${SERVICE_NAME_STAGE}'
     build: '.'
@@ -46,11 +47,11 @@ services:
       REDIS_HOST: '${REDIS_HOST}'
       REDIS_PORT: '${REDIS_PORT}'
       REDIS_PASSWORD: '${REDIS_PASSWORD}'
-      POSTGRES_HOST: '${POSTGRES_HOST}'
-      POSTGRES_USER: '${POSTGRES_USER}'
-      POSTGRES_DB: '${POSTGRES_DB}'
-      POSTGRES_PORT: '${POSTGRES_PORT}'
-      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      MYSQL_HOST: '${MYSQL_HOST}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_DB: '${MYSQL_DB}'
+      MYSQL_PORT: '${MYSQL_PORT}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       JWT_ACCESS_TOKEN_SECRET: '${JWT_ACCESS_TOKEN_SECRET}'
       JWT_REFRESH_TOKEN_SECRET: '${JWT_REFRESH_TOKEN_SECRET}'
     expose:
@@ -68,7 +69,7 @@ services:
       - 'gif-j'
       - 'infrastructure-traefik'
     depends_on:
-      - 'postgres'
+      - 'mysql'
       - 'redis'
     restart: 'always'
 
@@ -79,5 +80,5 @@ networks:
     external: true
 
 volumes:
-  pgdata:
+  mysqldata:
   redisdata:

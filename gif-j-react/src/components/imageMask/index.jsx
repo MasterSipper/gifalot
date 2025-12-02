@@ -14,12 +14,13 @@ import { useLocation } from "react-router";
 
 import "./style.css";
 
-export const ImageMask = ({ url, name, close, id, deg, list = false }) => {
+export const ImageMask = ({ url, name, close, id, deg, list = false, mimeType }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { folderImages } = useSelector(FoldersSelector);
 
   const [rotation, setRotation] = React.useState(deg);
+  const isVideo = mimeType && mimeType.startsWith('video/');
 
   const imgRef = React.useRef();
 
@@ -60,12 +61,24 @@ export const ImageMask = ({ url, name, close, id, deg, list = false }) => {
 
   return (
     <div className={"mask_wrapper"}>
-      <img
-        ref={imgRef}
-        src={url}
-        alt={name}
-        style={{ transform: `rotate(${rotation}deg)` }}
-      />
+      {isVideo ? (
+        <video
+          ref={imgRef}
+          src={url}
+          style={{ transform: `rotate(${rotation}deg)` }}
+          controls
+          autoPlay
+          muted
+          playsInline
+        />
+      ) : (
+        <img
+          ref={imgRef}
+          src={url}
+          alt={name}
+          style={{ transform: `rotate(${rotation}deg)` }}
+        />
+      )}
 
       <ul className={"mask__top_panel"}>
         {!list && location.pathname.includes("/dashboard/") && (

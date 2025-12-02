@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,8 +9,11 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { UserParam } from '../auth/auth.decorators';
 import { OptionalJwtAccessAuthGuard } from '../auth/auth.guard';
@@ -33,6 +37,24 @@ export class FileController {
     @Body() body: FileCreateDto,
   ) {
     return this.fileService.createFile(userId, collectionId, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':collectionId/upload')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 20 * 1024 * 1024, // 20MB limit
+    },
+  }))
+  public async uploadFile(
+    @UserParam('id') userId: number,
+    @Param('collectionId', ParseIntPipe) collectionId: number,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.fileService.uploadFileToS3(userId, collectionId, file);
   }
 
   @UseGuards(AuthGuard('jwt'))

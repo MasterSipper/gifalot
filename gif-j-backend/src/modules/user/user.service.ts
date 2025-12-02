@@ -12,7 +12,10 @@ export class UserService {
 
   public async createUser(user: Pick<User, 'email' | 'password'>) {
     return this.userRepository
-      .save(user)
+      .save({
+        ...user,
+        roles: ['user'], // Set default role for MySQL compatibility
+      })
       .then((r) => this.userRepository.create(r));
   }
 

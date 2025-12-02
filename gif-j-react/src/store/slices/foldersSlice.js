@@ -3,6 +3,7 @@ import axiosInstance from "../../helpers/axiosConfig";
 import { collections, file } from "../../static/api";
 import { notification } from "antd";
 import { folderService } from "../../helpers/folderService";
+import { normalizeCollectionFiles } from "../../helpers/normalizeCollectionFiles";
 
 export const getFolders = createAsyncThunk(
   "folder/get",
@@ -11,7 +12,16 @@ export const getFolders = createAsyncThunk(
       const res = await axiosInstance.get(collections);
       return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue({ error: error });
+      // Extract only serializable error data
+      const errorData = {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        } : null,
+      };
+      return thunkAPI.rejectWithValue({ error: errorData });
     }
   }
 );
@@ -23,7 +33,16 @@ export const getFoldersImages = createAsyncThunk(
       const res = await axiosInstance.get(`${file}/${userId}/${id}`);
       return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue({ error: error });
+      // Extract only serializable error data
+      const errorData = {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        } : null,
+      };
+      return thunkAPI.rejectWithValue({ error: errorData });
     }
   }
 );
@@ -88,8 +107,15 @@ export const folderSlice = createSlice({
     builder.addCase(getFolders.rejected, (state, { payload }) => {
       state.loading = false;
 
-      notification.open({
-        message: `something goes wrong`,
+      const errorMessage = payload?.error?.response?.data?.message || 
+                          payload?.error?.message || 
+                          "Failed to load compilations";
+      
+      console.error('Error loading folders:', payload?.error);
+      
+      notification.error({
+        message: "Error loading compilations",
+        description: errorMessage,
       });
     });
     builder.addCase(getFoldersImages.pending, (state) => {
@@ -98,36 +124,25 @@ export const folderSlice = createSlice({
     builder.addCase(getFoldersImages.fulfilled, (state, { payload }) => {
       state.imageLoading = false;
 
-      const arr = state?.folderItem.ranks.reduce((acc, curr) => {
-        const image = payload.find((img) => img.id === curr);
-        if (image) {
-          const newImage = {
-            ...image,
-            timePerSlide: image.timePerSlide ?? state?.folderItem?.timePerSlide,
-          };
-          acc.push(newImage);
-        }
-
-        return acc;
-      }, []);
-
-      const sorted = payload
-        .sort((a, b) => a.id - b.id)
-        .map((item) => ({
-          ...item,
-          timePerSlide: item.timePerSlide ?? state?.folderItem?.timePerSlide,
-        }));
-
-      state.folderImages =
-        state?.folderItem.ranks.length > 1 && arr.length >= payload.length
-          ? arr
-          : sorted;
-      folderService.setFolderImages(sorted);
+      const normalized = normalizeCollectionFiles(
+        state.folderItem,
+        payload ?? [],
+      );
+      state.folderImages = normalized;
+      folderService.setFolderImages(normalized);
     });
     builder.addCase(getFoldersImages.rejected, (state, { payload }) => {
       state.imageLoading = false;
-      notification.open({
-        message: `something goes wrong`,
+      
+      const errorMessage = payload?.error?.response?.data?.message || 
+                          payload?.error?.message || 
+                          "Failed to load compilation images";
+      
+      console.error('Error loading folder images:', payload?.error);
+      
+      notification.error({
+        message: "Error loading images",
+        description: errorMessage,
       });
     });
   },

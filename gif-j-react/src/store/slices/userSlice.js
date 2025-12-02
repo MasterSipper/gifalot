@@ -24,7 +24,19 @@ export const login = createAsyncThunk("auth/login", async (data, thunkAPI) => {
 
     return await { ...res.data, remember };
   } catch (error) {
-    return thunkAPI.rejectWithValue({ error: error });
+    // Extract only serializable error data
+    const errorData = {
+      message: error.message,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+      } : null,
+      request: error.request ? {
+        // Only include serializable request data if needed
+      } : null,
+    };
+    return thunkAPI.rejectWithValue({ error: errorData });
   }
 });
 
@@ -48,7 +60,16 @@ export const register = createAsyncThunk(
 
       return await res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue({ error: error });
+      // Extract only serializable error data
+      const errorData = {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+        } : null,
+      };
+      return thunkAPI.rejectWithValue({ error: errorData });
     }
   }
 );
@@ -68,18 +89,33 @@ export const logOut = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
     );
     return await res.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue({ error: error });
+    // Extract only serializable error data
+    const errorData = {
+      message: error.message,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+      } : null,
+    };
+    return thunkAPI.rejectWithValue({ error: errorData });
   }
 });
 
-const auth = userService.getUser();
-const remember = TokenService.getRemember();
-const user = userService.getUser();
+// TODO: Re-enable authentication when ready
+// Set DISABLE_AUTH to false to re-enable authentication
+const DISABLE_AUTH = true;
+
+const auth = DISABLE_AUTH ? true : Boolean(userService.getUser());
+const remember = DISABLE_AUTH ? false : TokenService.getRemember();
+const user = DISABLE_AUTH 
+  ? { id: 1, email: "dev@example.com" } // Mock user for development
+  : userService.getUser();
 
 const initialState = {
-  isAuth: Boolean(auth),
+  isAuth: DISABLE_AUTH ? true : Boolean(auth),
   rememberMe: remember,
-  userInfo: user === null ? "" : user,
+  userInfo: DISABLE_AUTH ? { id: 1, email: "dev@example.com" } : (user === null ? "" : user),
   loading: false,
 };
 
@@ -103,11 +139,36 @@ export const userSlice = createSlice({
     });
     builder.addCase(login.rejected, (state, { payload }) => {
       state.loading = false;
-      if (payload?.error.response.status === 400) {
-        notification.warning({
-          message: `wrong email or password`,
+      const error = payload?.error;
+      
+      if (error?.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || error.response.data?.error || error.message;
+        
+        if (status === 400 || status === 401) {
+          notification.error({
+            message: message || "Wrong email or password",
+            description: "Please check your credentials and try again",
+          });
+        } else if (status === 403) {
+          notification.error({
+            message: "reCAPTCHA verification failed",
+            description: "Please try again",
+          });
+        } else {
+          notification.error({
+            message: "Login failed",
+            description: message || "An error occurred. Please try again.",
+          });
+        }
+      } else {
+        notification.error({
+          message: "Login failed",
+          description: error?.message || "Unable to connect to server. Please check your connection.",
         });
       }
+      
+      console.error("Login error:", error);
     });
     builder.addCase(register.pending, (state) => {
       state.loading = true;

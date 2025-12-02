@@ -1,26 +1,42 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const fullscreenEventNames = [
+  "fullscreenchange",
+  "webkitfullscreenchange",
+  "mozfullscreenchange",
+  "MSFullscreenChange",
+];
+
+const isDocumentFullscreen = () => {
+  const doc = window.document;
+  return Boolean(
+    doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+  );
+};
 
 export function useFullscreenMode() {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const handleResize = () => {
-    if (
-      window.innerWidth === window.screen.width &&
-      window.innerHeight === window.screen.height
-    ) {
-      setIsFullscreen(true);
-    } else {
-      setIsFullscreen(false);
-    }
-  };
+  const [isFullscreen, setIsFullscreen] = useState(isDocumentFullscreen());
 
   useEffect(() => {
-    window.addEventListener("resize", handleResize);
+    const handleFullscreenChange = () => {
+      setIsFullscreen(isDocumentFullscreen());
+    };
+
+    fullscreenEventNames.forEach((eventName) => {
+      document.addEventListener(eventName, handleFullscreenChange);
+    });
+
+    handleFullscreenChange();
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      fullscreenEventNames.forEach((eventName) => {
+        document.removeEventListener(eventName, handleFullscreenChange);
+      });
     };
-  }, [window.document.innerWidth, window.document.innerHeight]);
+  }, []);
 
   return { isFullscreen };
 }

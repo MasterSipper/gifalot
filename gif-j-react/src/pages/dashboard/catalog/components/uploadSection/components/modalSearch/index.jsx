@@ -59,43 +59,102 @@ export const ModalSearch = () => {
   };
 
   const handleOk = async () => {
-    const res = await axiosInstance.post(`${file}/${folderItem.id}/giphy`, {
-      ids: addGifs,
-    });
+    console.log('handleOk called', { addGifs, folderItem });
+    
+    if (addGifs.length === 0) {
+      notification.warning({
+        message: "Please select at least one GIF to add",
+      });
+      return;
+    }
 
-    const arr = res.data.map((item) => ({
-      ...item,
-      timePerSlide: folderItem.timePerSlide,
-      transitionType: folderItem.transitionType,
-    }));
+    if (!folderItem || !folderItem.id) {
+      notification.error({
+        message: "Please select a playlist first",
+      });
+      console.error('No folderItem or folderItem.id:', folderItem);
+      return;
+    }
 
-    dispatch(addImage(arr));
-    setAddGifs([]);
-    reset();
+    try {
+      // Ensure all IDs are strings (Giphy API requires string IDs)
+      const idsToSend = addGifs.map((id) => String(id));
+      console.log('Sending API request:', { 
+        collectionId: folderItem.id, 
+        originalIds: addGifs,
+        idsToSend,
+        idsType: addGifs.map(id => typeof id),
+      });
+      const res = await axiosInstance.post(`${file}/${folderItem.id}/giphy`, {
+        ids: idsToSend,
+      });
+
+      console.log('API response:', res.data);
+
+      const arr = res.data.map((item) => ({
+        ...item,
+        timePerSlide: folderItem.timePerSlide || 4000,
+        transitionType: folderItem.transitionType || 'fadeInOut',
+      }));
+
+      dispatch(addImage(arr));
+      setAddGifs([]); // Clear selections
+      setGifs([]); // Clear search results
+      dispatch(searchClosed());
+      notification.success({
+        message: `Successfully added ${arr.length} GIF(s) to playlist`,
+      });
+    } catch (error) {
+      console.error('Error adding GIFs:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      notification.error({
+        message: error.response?.data?.message || error.message || "Failed to add GIFs to playlist",
+        description: error.response?.data?.error || error.response?.statusText,
+      });
+    }
   };
 
   const handleCancel = async () => {
     setFields(searchFormFields);
-    dispatch(searchClosed());
-    setAddGifs([]);
-    // setTotal(0);
+    setAddGifs([]); // Clear selections first
     setGifs([]);
+    dispatch(searchClosed());
   };
 
   const handleChecked = (e, checked, id) => {
-    if (!checked) {
-      setAddGifs((prevState) => prevState.concat(id));
+    console.log('handleChecked called', { checked, id, currentAddGifs: addGifs });
+    // checked is the NEW state: true = now checked (add), false = now unchecked (remove)
+    if (checked) {
+      // GIF is now checked - add it to the list
+      setAddGifs((prevState) => {
+        // Prevent duplicates
+        if (prevState.includes(id)) {
+          console.log('GIF already in list:', id);
+          return prevState;
+        }
+        const newState = prevState.concat(id);
+        console.log('Adding GIF, new state:', newState);
+        return newState;
+      });
     } else {
+      // GIF is now unchecked - remove it from the list
       const newArr = addGifs.filter((item) => item !== id);
+      console.log('Removing GIF, new state:', newArr);
       setAddGifs(newArr);
     }
   };
 
-  if (addGifs.length > 10) {
-    notification.open({
-      message: `You can't add more than 10 gifs for one time`,
-    });
-  }
+  React.useEffect(() => {
+    if (addGifs.length > 10) {
+      notification.warning({
+        message: `You can't add more than 10 gifs for one time`,
+      });
+    }
+  }, [addGifs.length]);
 
   const reset = () => {
     return false;
@@ -110,6 +169,7 @@ export const ModalSearch = () => {
             item={gif}
             onChecked={handleChecked}
             condition={addGifs.length}
+            selectedIds={addGifs}
           />
         </Col>
       );

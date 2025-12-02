@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { routes } from "../../../static/routes";
 import { login } from "../../../store/slices/userSlice";
-import { GoogleReCaptcha } from "react-google-recaptcha-v3";
+import { GoogleReCaptcha, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useCaptcha } from "../../../hooks/useCaptcha";
 
 import "./style.css";
@@ -12,12 +12,49 @@ import "./style.css";
 export const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [loading, setLoading] = React.useState(false);
 
-  const { clickHandler, token, handleVerify } = useCaptcha();
+  const { token, handleVerify } = useCaptcha();
 
   const onFinish = async (values) => {
-    await dispatch(login({ ...values, token }));
-    navigate(`/${routes.dashboard}`);
+    console.log("Login form submitted with values:", values);
+    setLoading(true);
+    try {
+      // Ensure captcha token is set before submitting
+      let captchaToken = token;
+      if (!captchaToken && executeRecaptcha) {
+        try {
+          console.log("Getting reCAPTCHA token...");
+          captchaToken = await executeRecaptcha("login");
+          console.log("reCAPTCHA token obtained");
+        } catch (error) {
+          console.error("Failed to get reCAPTCHA token:", error);
+        }
+      } else {
+        console.log("Using existing reCAPTCHA token");
+      }
+      
+      console.log("Dispatching login action...");
+      const result = await dispatch(login({ ...values, token: captchaToken || "" }));
+      console.log("Login result:", result);
+      
+      // Only navigate if login was successful
+      if (login.fulfilled.match(result)) {
+        console.log("Login successful, navigating to dashboard");
+        navigate(`/${routes.dashboard}`);
+      } else {
+        console.log("Login failed or rejected");
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const onFinishFailed = (errorInfo) => {
+    console.error("Form validation failed:", errorInfo);
   };
 
   const toRegistration = () => {
@@ -35,6 +72,7 @@ export const LoginForm = () => {
       className={"form"}
       initialValues={{ remember: false }}
       onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
       autoComplete="on"
     >
       <h1 className={"form__header"}>Login</h1>
@@ -77,7 +115,8 @@ export const LoginForm = () => {
           className={"logic__btn"}
           type="primary"
           htmlType="submit"
-          onClick={clickHandler}
+          loading={loading}
+          disabled={loading}
         >
           Log In
         </Button>

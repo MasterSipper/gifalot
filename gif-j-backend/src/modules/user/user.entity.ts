@@ -13,7 +13,7 @@ export class User {
   @Column()
   public password: string;
 
-  @Column({ type: 'simple-array', default: 'user' })
+  @Column({ type: 'simple-array', nullable: false })
   public roles: string[];
 
   @OneToMany(() => Collection, (collection) => collection.user)

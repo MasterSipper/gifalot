@@ -17,6 +17,8 @@ axiosInstance.interceptors.request.use(
     const token = TokenService.getAccessToken();
     if (token) {
       config.headers["authorization"] = `Bearer ${token}`;
+    } else {
+      console.warn("No access token found for request:", config.url);
     }
     return config;
   },

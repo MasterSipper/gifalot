@@ -10,3 +10,16 @@
         opacity: 1
     }
 }
+
+.dissolve {
+    animation: dissolve ease-in-out;
+}
+
+@keyframes dissolve {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

@@ -1,12 +1,14 @@
 import React from "react";
 import "./style.css";
 
+const DEFAULT_TRANSITION_DURATION = 500;
+
 export const AnimationHandler = ({
   children,
   type,
-  time,
   rotation,
   isActive,
+  transitionDuration = DEFAULT_TRANSITION_DURATION,
 }) => {
   const imageRef = React.useRef(null);
 
@@ -53,7 +55,7 @@ export const AnimationHandler = ({
       className={isActive ? type : ""}
       ref={imageRef}
       style={{
-        animationDuration: `${time}ms`,
+        animationDuration: `${transitionDuration}ms`,
         transform: `rotate(${rotation}deg)`,
       }}
     >

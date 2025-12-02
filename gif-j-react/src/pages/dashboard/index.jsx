@@ -37,14 +37,19 @@ export const DashboardPage = () => {
   }, [location.pathname]);
 
   const handleAddClick = async () => {
-    const newFolder = {
-      name: "[Unnamed compilation]",
-      private: true,
-    };
-    const res = await axiosInstance.post(collections, newFolder);
-    dispatch(SetFolder({ ...res.data, justCreated: true }));
-    dispatch(SetFolders(res.data));
-    navigate(`/${routes.dashboard}/${res.data.name}`);
+    try {
+      const newFolder = {
+        name: "[Unnamed compilation]",
+        private: true,
+      };
+      const res = await axiosInstance.post(collections, newFolder);
+      dispatch(SetFolder({ ...res.data, justCreated: true }));
+      dispatch(SetFolders(res.data));
+      navigate(`/${routes.dashboard}/${res.data.id}`);
+    } catch (error) {
+      console.error('Error creating compilation:', error);
+      // Error notification will be handled by axios interceptor or we can add one here
+    }
   };
 
   const toFolder = (e, item) => {
