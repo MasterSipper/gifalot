@@ -134,11 +134,9 @@ export const PublicCarousel = () => {
       
       // Determine items per slide and how to get items
       let slideItems = [];
-      let itemsPerSlide = 1;
       let advanceBy = 1;
       
       if (template === "1up") {
-        itemsPerSlide = 1;
         advanceBy = 1;
         slideItems = [item];
       } else if (template === "2next") {
