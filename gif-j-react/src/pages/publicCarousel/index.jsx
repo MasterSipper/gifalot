@@ -54,7 +54,7 @@ export const PublicCarousel = () => {
   }, [fetchData]);
 
   // Calculate total slides based on per-item templates
-  const calculateTotalSlides = () => {
+  const calculateTotalSlides = React.useCallback(() => {
     let slides = 0;
     let idx = 0;
     while (idx < state.length) {
@@ -67,7 +67,7 @@ export const PublicCarousel = () => {
       slides++;
     }
     return slides;
-  };
+  }, [state, catalogData]);
 
   React.useEffect(() => {
     if (!play || state.length === 0) {
@@ -150,11 +150,9 @@ export const PublicCarousel = () => {
         advanceBy = 4;
         slideItems = state.slice(idx, Math.min(idx + 4, state.length));
       } else if (template === "2up") {
-        itemsPerSlide = 2;
         advanceBy = 1;
         slideItems = [item, item];
       } else if (template === "4up") {
-        itemsPerSlide = 4;
         advanceBy = 1;
         slideItems = [item, item, item, item];
       }

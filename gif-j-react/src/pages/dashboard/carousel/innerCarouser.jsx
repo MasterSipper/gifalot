@@ -106,7 +106,7 @@ export const InnerCarouser = () => {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [isStop, navigate]);
+    }, [isStop, navigate, isStandalonePlayer, params.folder, folderItem?.id]);
 
     // Calculate total slides based on per-item templates
     const calculateTotalSlides = React.useCallback(() => {
@@ -235,12 +235,10 @@ export const InnerCarouser = () => {
                 advanceBy = 4;
                 slideItems = folderImages.slice(idx, Math.min(idx + 4, folderImages.length));
             } else if (template === "2up") {
-                itemsPerSlide = 2;
                 advanceBy = 1; // Only advance by 1 since we're repeating the same item
                 slideItems = [item, item]; // Repeat the same item twice
                 console.log('2up template - creating slide with 2 items:', slideItems.length, 'items');
             } else if (template === "4up") {
-                itemsPerSlide = 4;
                 advanceBy = 1; // Only advance by 1 since we're repeating the same item
                 slideItems = [item, item, item, item]; // Repeat the same item four times
             }

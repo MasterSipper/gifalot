@@ -24,7 +24,6 @@ import "animate.css";
 export const Player = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const location = useLocation();
   const dispatch = useDispatch();
   
   // Determine if this is a public or private player
@@ -32,7 +31,7 @@ export const Player = () => {
   const isPrivate = Boolean(params.folder && !params.userId);
   
   const { folderImages, folderItem } = useSelector(FoldersSelector);
-  const { userInfo, isAuth } = useSelector(UserInfo);
+  const { userInfo } = useSelector(UserInfo);
   const { isFullscreen } = useFullscreenMode();
 
   const [slideIndex, setSlideIndex] = React.useState(0);
@@ -182,7 +181,7 @@ export const Player = () => {
   }, []);
 
   // Calculate total slides based on per-item templates
-  const calculateTotalSlides = () => {
+  const calculateTotalSlides = React.useCallback(() => {
     let slides = 0;
     let idx = 0;
     const items = isPublic ? state : folderImages;
@@ -198,7 +197,7 @@ export const Player = () => {
       slides++;
     }
     return slides;
-  };
+  }, [isPublic, state, folderImages, catalogData, folderItem]);
 
   // Auto-advance slides
   React.useEffect(() => {
@@ -272,9 +271,9 @@ export const Player = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isStop]);
+  }, [isStop, handleClose]);
 
-  const handleClose = async () => {
+  const handleClose = React.useCallback(async () => {
     exitScreen();
     if (isPrivate && params.folder) {
       await navigate(`/${routes.dashboard}/${params.folder}`);
@@ -284,7 +283,7 @@ export const Player = () => {
     } else {
       await navigate(`/${routes.dashboard}`);
     }
-  };
+  }, [isPrivate, isPublic, params.folder, params.folderId, navigate, exitScreen]);
 
   const renderData = () => {
     const slides = [];
