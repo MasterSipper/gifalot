@@ -15,3 +15,11 @@ export const viewSelectOptions = [
   { value: "grid", label: "Grid view" },
   { value: "list", label: "List view" },
 ];
+
+export const templateSelectOptions = [
+  { value: "1up", label: "1up" },
+  { value: "2up", label: "2up" },
+  { value: "4up", label: "4up" },
+  { value: "2next", label: "2next" },
+  { value: "4next", label: "4next" },
+];
