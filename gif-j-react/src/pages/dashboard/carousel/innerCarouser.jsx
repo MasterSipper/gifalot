@@ -227,11 +227,9 @@ export const InnerCarouser = () => {
                 advanceBy = 1;
                 slideItems = [item];
             } else if (template === "2next") {
-                itemsPerSlide = 2;
                 advanceBy = 2;
                 slideItems = folderImages.slice(idx, Math.min(idx + 2, folderImages.length));
             } else if (template === "4next") {
-                itemsPerSlide = 4;
                 advanceBy = 4;
                 slideItems = folderImages.slice(idx, Math.min(idx + 4, folderImages.length));
             } else if (template === "2up") {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Carousel } from "react-responsive-carousel";
-import { useParams, useNavigate, useLocation } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useFullscreenMode } from "../../hooks/useFullScreen";
 import { exitScreen, fullScreen } from "../../helpers/screen";
@@ -244,6 +244,18 @@ export const Player = () => {
     }
   }, [slideIndex, state.length, calculateTotalSlides]);
 
+  const handleClose = React.useCallback(async () => {
+    exitScreen();
+    if (isPrivate && params.folder) {
+      await navigate(`/${routes.dashboard}/${params.folder}`);
+    } else if (isPublic && params.folderId) {
+      // For public player, just close or navigate to home
+      await navigate(`/${routes.login}`);
+    } else {
+      await navigate(`/${routes.dashboard}`);
+    }
+  }, [isPrivate, isPublic, params.folder, params.folderId, navigate]);
+
   // Keyboard navigation
   React.useEffect(() => {
     const handleKeyDown = async (e) => {
@@ -272,18 +284,6 @@ export const Player = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isStop, handleClose]);
-
-  const handleClose = React.useCallback(async () => {
-    exitScreen();
-    if (isPrivate && params.folder) {
-      await navigate(`/${routes.dashboard}/${params.folder}`);
-    } else if (isPublic && params.folderId) {
-      // For public player, just close or navigate to home
-      await navigate(`/${routes.login}`);
-    } else {
-      await navigate(`/${routes.dashboard}`);
-    }
-  }, [isPrivate, isPublic, params.folder, params.folderId, navigate, exitScreen]);
 
   const renderData = () => {
     const slides = [];
