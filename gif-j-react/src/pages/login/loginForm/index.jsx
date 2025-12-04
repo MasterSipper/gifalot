@@ -18,6 +18,33 @@ export const LoginForm = () => {
   const { token, handleVerify } = useCaptcha();
 
   const onFinish = async (values) => {
+    // Check if auth is disabled - if so, just navigate to dashboard
+    const DISABLE_AUTH = true; // Match the flag in userSlice.js
+    
+    if (DISABLE_AUTH) {
+      // Auth is disabled, skip login and navigate directly
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        const playerMatch = redirectUrl.match(/\/(\d+)\/(\d+)\/carousel/);
+        if (playerMatch) {
+          const folderId = playerMatch[2];
+          navigate(`/${routes.dashboard}/${folderId}`);
+        } else {
+          const privatePlayerMatch = redirectUrl.match(/\/player\/(\d+)/);
+          if (privatePlayerMatch) {
+            const folderId = privatePlayerMatch[1];
+            navigate(`/${routes.dashboard}/${folderId}`);
+          } else {
+            navigate(redirectUrl);
+          }
+        }
+      } else {
+        navigate(`/${routes.dashboard}`);
+      }
+      return;
+    }
+    
     console.log("Login form submitted with values:", values);
     setLoading(true);
     try {
@@ -71,7 +98,9 @@ export const LoginForm = () => {
         }
       }
     } catch (error) {
-      console.error('Login error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', error);
+      }
     } finally {
       setLoading(false);
     }

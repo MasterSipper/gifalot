@@ -6,6 +6,16 @@ import { TokenService } from "../../helpers/tokenService";
 import { userService } from "../../helpers/userService";
 
 export const login = createAsyncThunk("auth/login", async (data, thunkAPI) => {
+  // If auth is disabled, return mock user data immediately
+  if (DISABLE_AUTH) {
+    return {
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh',
+      user: { id: 1, email: "dev@example.com" },
+      remember: data.remember,
+    };
+  }
+
   const { remember, email, password, token } = data;
 
   try {
