@@ -43,7 +43,16 @@ export class File {
   public rotation: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  public template: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   public originalUrl: string | null;
+
+  @Column({ type: 'integer', nullable: true })
+  public width: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  public height: number | null;
 
   @ManyToOne(() => Collection, (collection) => collection.files, {
     onDelete: 'CASCADE',
@@ -65,6 +74,9 @@ export class File {
       timePerSlide: this.timePerSlide,
       transitionType: this.transitionType,
       rotation: this.rotation,
+      template: this.template,
+      width: this.width,
+      height: this.height,
       isFavorite: !!favoriteDate,
       favoriteDate: favoriteDate ?? null,
       url: url ?? null,

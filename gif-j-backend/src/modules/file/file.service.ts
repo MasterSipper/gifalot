@@ -1,4 +1,5 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
@@ -307,7 +308,17 @@ export class FileService {
       });
 
       const response = await axios.get<{
-        data: { id: string; title: string; images: { original: { url: string } } }[];
+        data: { 
+          id: string; 
+          title: string; 
+          images: { 
+            original: { 
+              url: string;
+              width?: string | number;
+              height?: string | number;
+            } 
+          } 
+        }[];
         meta?: { status: number; msg?: string };
       }>(`https://api.giphy.com/v1/gifs`, {
         params: {
@@ -348,12 +359,17 @@ export class FileService {
       const result = await this.batchCreate(
         userId,
         collection,
-        gifs.map((gif) => ({
-          name: gif.title.slice(0, 255).toLowerCase(),
-          ext: 'gif',
-          mimeType: 'image/gif',
-          url: gif.images.original.url,
-        })),
+        gifs.map((gif) => {
+          const originalImage = gif.images?.original || {};
+          return {
+            name: gif.title?.slice(0, 255).toLowerCase() || 'untitled',
+            ext: 'gif',
+            mimeType: 'image/gif',
+            url: originalImage.url || '',
+            width: originalImage.width ? parseInt(String(originalImage.width), 10) : null,
+            height: originalImage.height ? parseInt(String(originalImage.height), 10) : null,
+          };
+        }),
       );
 
       console.log(`Successfully created ${result.length} files`);
@@ -526,7 +542,77 @@ export class FileService {
       throw new BadRequestException(ErrorCodes.FILE_NOT_FOUND);
     }
 
-    await this.fileRepository.update(id, body);
+    try {
+      await this.fileRepository.update(id, body);
+    } catch (error) {
+      console.error('Error updating file:', error);
+      throw new BadRequestException(`Failed to update file: ${error.message}`);
+    }
+  }
+
+  public async duplicateFile(userId: number, id: number) {
+    const file = await this.fileRepository.findOne({
+      where: { id, collection: { user: { id: userId } } },
+      relations: ['collection'],
+    });
+    if (!file) {
+      throw new BadRequestException(ErrorCodes.FILE_NOT_FOUND);
+    }
+
+    const collectionId = file.collection.id;
+    const count = await this.getUserFilesCount(collectionId);
+    if (count > FILE_CONSTANTS.LIMIT_PER_COLLECTION) {
+      throw new BadRequestException(ErrorCodes.FILES_LIMIT_REACHED);
+    }
+
+    // Create new file record
+    const newFile = this.fileRepository.create({
+      name: file.name,
+      ext: file.ext,
+      mimeType: file.mimeType,
+      timePerSlide: file.timePerSlide,
+      transitionType: file.transitionType,
+      rotation: file.rotation,
+      template: file.template,
+      originalUrl: file.originalUrl,
+      collection: { id: collectionId },
+    });
+    await this.fileRepository.insert(newFile);
+
+    // Copy file in S3 if it exists
+    const sourceKey = this.buildKey(file.id, userId, collectionId, file.ext);
+    const destKey = this.buildKey(newFile.id, userId, collectionId, file.ext);
+    const bucketName = process.env.S3_BUCKET_NAME?.replace(/['"]/g, '') || '';
+    
+    try {
+      // Only try to copy if S3 is configured
+      if (bucketName && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_ACCESS_KEY_ID !== 'your-aws-access-key-id') {
+        await this.s3.send(
+          new CopyObjectCommand({
+            Bucket: bucketName,
+            CopySource: `${bucketName}/${sourceKey}`,
+            Key: destKey,
+          }),
+        );
+
+        const url = await this.getFileUrl(destKey);
+        return newFile.toAPI(url);
+      } else {
+        // If S3 is not configured, use originalUrl if available
+        console.log('S3 not configured, using originalUrl for duplicate');
+        return newFile.toAPI(file.originalUrl || undefined);
+      }
+    } catch (error) {
+      // If S3 copy fails, still return the file (it might use originalUrl)
+      console.error('Error copying file in S3:', error);
+      // Try to get URL for the new file, fallback to originalUrl
+      try {
+        const url = await this.getFileUrl(destKey);
+        return newFile.toAPI(url);
+      } catch {
+        return newFile.toAPI(file.originalUrl || undefined);
+      }
+    }
   }
 
   public async deleteFile(userId: number, id: number) {
@@ -686,7 +772,7 @@ export class FileService {
   private async batchCreate(
     userId: number,
     collection: Collection,
-    filesData: { name: string; ext: string; mimeType: string; url: string }[],
+    filesData: { name: string; ext: string; mimeType: string; url: string; width?: number | null; height?: number | null }[],
   ) {
     const files = this.fileRepository.create(
       filesData.map((file) => ({
@@ -694,6 +780,8 @@ export class FileService {
         ext: file.ext,
         mimeType: file.mimeType,
         originalUrl: file.url, // Store original URL for fallback
+        width: file.width ?? null,
+        height: file.height ?? null,
         collection: { id: collection.id },
       })),
     );

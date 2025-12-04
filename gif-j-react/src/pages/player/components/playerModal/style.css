@@ -1,0 +1,61 @@
+/* Reuse styles from public carousel modal */
+.player_modal {
+  /* Modal styles are handled by Ant Design */
+}
+
+.player_modal__main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.main__top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.main__top__btn {
+  width: 100%;
+  max-width: 200px;
+}
+
+.main__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.main__bottom__auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.main__bottom__no__auth {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.no__auth__block,
+.no__auth__block__left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.text {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.main__bottom__auth__btn {
+  margin: 0;
+}
+

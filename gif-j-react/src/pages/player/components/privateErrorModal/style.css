@@ -1,0 +1,19 @@
+.player_modal__error .ant-modal-body {
+  width: 100%;
+  border-top: 2px #DFE6E9 solid;
+}
+
+.error__block {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.error__block p {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.02em;
+  color: #111314;
+  margin-bottom: 0;
+}
+

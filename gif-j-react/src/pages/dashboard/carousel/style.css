@@ -11,17 +11,372 @@
     z-index: 10;
 }
 
+/* When player runs independently (not as overlay), ensure it covers full viewport */
+body:has(.carousel__wrapper) {
+    overflow: hidden;
+}
+
+.carousel__version {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-family: monospace;
+    z-index: 1000;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.carousel__template {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
 .carousel__slide {
     cursor: pointer;
     display: flex;
     justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100dvh; /* Use dynamic viewport height for better mobile/responsive support */
+    height: 100vh; /* Fallback for browsers that don't support dvh */
+    position: relative;
+    min-height: 100dvh; /* Use dynamic viewport height for better mobile/responsive support */
+    min-height: 100vh; /* Fallback for browsers that don't support dvh */
 }
 
+/* 1up slide: ensure items stretch to full height */
+.carousel__slide--1up {
+    flex-direction: row;
+    align-items: stretch !important; /* Override center alignment, ensure items stretch */
+    justify-content: center;
+}
+
+/* 2up layout: side-by-side slots, each 50% width, 100% height (8:9 aspect ratio for 16:9 screen) */
+.carousel__slide--2up {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important; /* Use dynamic viewport height for better mobile/responsive support */
+    height: 100vh !important; /* Fallback for browsers that don't support dvh */
+    min-height: 100dvh !important;
+    min-height: 100vh !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important; /* Override center from base .carousel__slide */
+    align-items: stretch !important; /* Override center from base .carousel__slide */
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* Ensure slide content container doesn't add spacing */
+.carousel__slide--2up::before,
+.carousel__slide--2up::after {
+    display: none !important;
+}
+
+/* 4up layout: 2x2 grid, each slot maintains 16:9 aspect ratio (25% of screen size each) */
+.carousel__slide--4up {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0;
+    width: 100%;
+    height: 100dvh; /* Use dynamic viewport height for better mobile/responsive support */
+    height: 100vh; /* Fallback for browsers that don't support dvh */
+    margin: 0;
+    padding: 0;
+    align-content: stretch;
+    justify-content: stretch;
+    place-items: stretch;
+}
+
+.carousel__item-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* For 2up, the inner item-wrapper must fill 100% */
+/* This targets the item-wrapper div that's a direct child or nested inside animation-handler */
+.carousel__item-wrapper--2up .carousel__item-wrapper:not(.carousel__item-wrapper--2up):not(.carousel__item-wrapper--4up):not(.carousel__item-wrapper--1up) {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.carousel__item-wrapper--1up {
+    width: 100% !important;
+    height: 100dvh !important; /* Use dynamic viewport height for better mobile/responsive support */
+    height: 100vh !important; /* Fallback for browsers that don't support dvh */
+    min-height: 100dvh !important; /* Use dynamic viewport height for better mobile/responsive support */
+    min-height: 100vh !important; /* Fallback for browsers that don't support dvh */
+    display: flex !important;
+    align-items: center !important; /* Center items vertically to allow proper aspect ratio handling */
+    justify-content: center !important; /* Center items horizontally */
+    overflow: hidden;
+}
+
+/* 2up wrapper: each slot is 50% width, 100% height (8:9 aspect ratio for 16:9 screen) */
+/* SLOT = 50% width, 100% height */
+/* Only apply 50% width to direct children of the slide, not nested ones */
+.carousel__slide--2up > .carousel__item-wrapper--2up,
+.carousel__item-wrapper--2up:not(.animation-handler .carousel__item-wrapper--2up):not(.carousel__item-wrapper .carousel__item-wrapper--2up) {
+    flex: 0 0 50% !important;
+    flex-basis: 50% !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    justify-content: center !important; /* Center content horizontally */
+    align-items: stretch !important; /* Stretch items to fill height */
+    width: 50% !important;
+    max-width: 50% !important;
+    min-width: 50% !important;
+    height: 100dvh !important; /* Use dynamic viewport height for better mobile/responsive support */
+    height: 100vh !important; /* Fallback for browsers that don't support dvh */
+    overflow: hidden !important;
+    min-height: 100dvh !important; /* Use dynamic viewport height for better mobile/responsive support */
+    min-height: 100vh !important; /* Fallback for browsers that don't support dvh */
+    position: relative !important;
+    visibility: visible !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Nested item-wrapper with --2up class should be 100% width (inside animation-handler) */
+/* This overrides the 50% width rule for nested wrappers */
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper--2up,
+.carousel__item-wrapper--2up .carousel__item-wrapper--2up,
+.carousel__item-wrapper--2up .animation-handler > .carousel__item-wrapper--2up {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+    flex-basis: 100% !important;
+    flex-grow: 1 !important;
+    flex-shrink: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+}
+
+/* 4up wrapper: each slot maintains 16:9 aspect ratio (25% of screen size) */
+/* The 2x2 grid naturally creates 16:9 slots when the container is 16:9 */
+.carousel__item-wrapper--4up {
+    display: flex !important;
+    justify-content: center;
+    align-items: stretch; /* Changed from center to stretch so items fill height */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    min-width: 0;
+    min-height: 100%; /* Ensure minimum height */
+    visibility: visible !important;
+}
+
+/* Base carousel item - default styles */
+/* Note: Specific layout rules below will override these */
 .carousel__item {
     width: 100%;
-    height: 100vh;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    box-sizing: border-box;
 }
+
+/* 1up items: base styles - use contain to preserve aspect ratio */
+/* All items use 100% width/height with contain - browser will fit to maintain aspect ratio */
+.carousel__item-wrapper--1up .carousel__item {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* Preserve aspect ratio, fit within container */
+    object-position: center center;
+    display: block !important;
+}
+
+/* 1up landscape items: fit to width, preserve aspect ratio, center vertically */
+/* This handles both 16:9 and 4:3 landscape images correctly */
+/* With contain, landscape images will fill width and be centered vertically */
+.carousel__item-wrapper--1up .carousel__item--landscape {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* Preserve aspect ratio, fit to width */
+    object-position: center center;
+    display: block !important;
+}
+
+/* 1up portrait items: fit to height, preserve aspect ratio, center horizontally */
+/* With contain, portrait images will fill height and be centered horizontally */
+.carousel__item-wrapper--1up .carousel__item--portrait {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* Preserve aspect ratio, fit to height */
+    object-position: center center;
+    display: block !important;
+}
+
+/* 1up square items: fit to smaller dimension, preserve aspect ratio, center both */
+.carousel__item-wrapper--1up .carousel__item--square {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important; /* Preserve aspect ratio */
+    object-position: center center;
+    display: block !important;
+}
+
+/* Reset base styles for aspect-ratio-specific items */
+/* Note: Base styles are overridden by layout-specific rules below */
+
+/* ============================================
+   2UP LAYOUT - Clear hierarchy:
+   Slide (wrapper) = 100% width, 100% height
+   Slots (item-wrapper) = 50% width each, 100% height
+   Content (item) = 100% width of slot, 100% height, center content, crop left/right if landscape
+   ============================================ */
+
+/* 2up items: MUST be 100% of their wrapper (wrapper is 50% of screen) */
+/* Target img, picture, and video directly - simpler and more reliable */
+.carousel__item-wrapper--2up img,
+.carousel__item-wrapper--2up picture,
+.carousel__item-wrapper--2up video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
+    object-position: center !important;
+    display: block !important;
+}
+
+/* Also target .carousel__item class for compatibility */
+.carousel__item-wrapper--2up .carousel__item {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
+    object-position: center !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Animation handler: Must also be 100% of wrapper */
+.carousel__item-wrapper--2up .animation-handler {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Inner item-wrapper div inside animation handler must also be 100% */
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 4up items: fit to height of slot */
+.carousel__item-wrapper--4up .carousel__item {
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important; /* Prevent overflow beyond container */
+    min-width: 0;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    object-fit: cover !important; /* Fill height, crop width */
+    object-position: center;
+    display: block !important;
+    flex-shrink: 0;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 2up: Different object-fit based on aspect ratio */
+/* Portrait: Use contain to fit full height, maintain aspect ratio */
+.carousel__item-wrapper--2up .carousel__item--portrait {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
+    object-position: center !important;
+    display: block !important;
+}
+
+/* Landscape: Use cover to fill height, crop left/right if needed */
+.carousel__item-wrapper--2up .carousel__item--landscape {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; /* Fill container height, crop width if needed */
+    object-position: center !important;
+    display: block !important;
+}
+
+/* Square: Use contain to fit within container */
+.carousel__item-wrapper--2up .carousel__item--square {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
+    object-position: center !important;
+    display: block !important;
+}
+
+/* 4up: All items fit to height of slot, centered, cropped left/right */
+.carousel__item-wrapper--4up .carousel__item--square,
+.carousel__item-wrapper--4up .carousel__item--landscape,
+.carousel__item-wrapper--4up .carousel__item--portrait {
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important; /* Prevent overflow beyond container */
+    min-width: 0;
+    min-height: 0 !important;
+    object-fit: cover !important; /* Fill height, crop width */
+    object-position: center;
+    margin: 0 auto;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 
 .carousel__item:hover {
     cursor: pointer;
@@ -32,16 +387,177 @@
     height: 100%;
 }
 
+/* Override react-responsive-carousel styles that might interfere with 2up layout */
+.carousel .slider-wrapper,
+.carousel .slider,
+.carousel .slide {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure 2up slides take full width with no gaps */
+.carousel .slider-wrapper .slider .slide.carousel__slide--2up {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Force 2up item wrappers to be exactly 50% with no spacing */
+.carousel__slide--2up > .carousel__item-wrapper--2up {
+    flex: 0 0 50% !important;
+    flex-basis: 50% !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    width: 50% !important;
+    max-width: 50% !important;
+    min-width: 50% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Ensure only 2 items per 2up slide - hide any extra */
+.carousel__slide--2up > .carousel__item-wrapper--2up:nth-child(n+3) {
+    display: none !important;
+}
+
+/* Override any carousel library container that might be adding spacing */
+.carousel__slide--2up * {
+    box-sizing: border-box !important;
+}
+
 
 .animation-handler {
     opacity: 0;
     transition: all 0.5s ease-in-out;
-
-
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    min-height: 100%; /* Ensure full height for 1up - will be overridden by layout-specific rules */
 }
 
+/* Ensure items are visible when active - this is the most important rule */
+.animation-handler.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 100% !important; /* Ensure full height */
+}
 
-.active {
+/* 1up: Ensure animation handler allows proper centering */
+.carousel__item-wrapper--1up .animation-handler {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: center !important; /* Center items vertically */
+    justify-content: center !important; /* Center items horizontally */
+    flex: 1 1 100% !important; /* Take full available space */
+}
+
+.carousel__item-wrapper--1up .animation-handler.active {
+    min-height: 100% !important;
+    max-height: 100% !important;
+    height: 100% !important;
+    flex: 1 1 100% !important;
+    align-items: center !important; /* Center items vertically */
+    justify-content: center !important; /* Center items horizontally */
+}
+
+/* For 2up and 4up, always show items when active */
+.carousel__item-wrapper--2up .animation-handler.active,
+.carousel__item-wrapper--4up .animation-handler.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    height: 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Fallback: if no animation type, still show the item */
+.animation-handler:not(.fadeInOut):not(.dissolve) {
     opacity: 1;
+}
+
+/* Ensure animation handler doesn't interfere with 2up/4up layouts */
+/* CRITICAL: Animation handler must be 100% width/height to not constrain child images */
+/* Override base .animation-handler rule with higher specificity and !important */
+.carousel__item-wrapper--2up .animation-handler,
+.carousel__item-wrapper--4up .animation-handler {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    flex: 1 1 100% !important; /* Take full available space */
+    opacity: 1 !important; /* Force visibility for 2up/4up */
+    visibility: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    /* Override transition that might interfere */
+    transition: none !important;
+}
+
+/* Ensure images inside animation handler follow aspect-ratio-specific rules */
+/* Base styles for all items */
+.carousel__item-wrapper--2up .animation-handler img,
+.carousel__item-wrapper--2up .animation-handler picture,
+.carousel__item-wrapper--2up .animation-handler video,
+.carousel__item-wrapper--2up .animation-handler .carousel__item,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    object-position: center !important;
+    /* object-fit will be set by aspect-ratio-specific rules below */
+}
+
+/* Portrait: contain to fit full height */
+.carousel__item-wrapper--2up .animation-handler .carousel__item--portrait,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--portrait,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img.carousel__item--portrait,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video.carousel__item--portrait {
+    object-fit: contain !important;
+}
+
+/* Landscape: cover to fill height, crop width */
+.carousel__item-wrapper--2up .animation-handler .carousel__item--landscape,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--landscape,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video.carousel__item--landscape {
+    object-fit: cover !important;
+}
+
+/* Square: contain to fit within container */
+.carousel__item-wrapper--2up .animation-handler .carousel__item--square,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--square,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img.carousel__item--square,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video.carousel__item--square {
+    object-fit: contain !important;
+}
+
+/* Force visibility for active items in 2up/4up */
+.carousel__item-wrapper--2up .animation-handler.active,
+.carousel__item-wrapper--4up .animation-handler.active {
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
