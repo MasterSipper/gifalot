@@ -33,7 +33,7 @@ export const SettingsItemModal = () => {
   React.useEffect(() => {
     setSeconds(initialSeconds);
     setAnimation(initialAnimation);
-  }, [folderImage]);
+  }, [folderImage, initialSeconds, initialAnimation]);
 
   const handleInputChange = (value) => {
     setSeconds((prevState) => value);

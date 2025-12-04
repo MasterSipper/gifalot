@@ -21,7 +21,7 @@ export const StartModal = ({handleChangePlay}) => {
             .then((res) => {
                 setCatalog(res.data);
             })
-    }, [])
+    }, [userId, folderId])
     const {userInfo} = useSelector(UserInfo);
 
     const handlePlay = () => {

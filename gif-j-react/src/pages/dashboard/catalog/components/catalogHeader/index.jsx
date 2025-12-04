@@ -7,10 +7,12 @@ import {
 } from "../../../store/modalSlice/modalSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { FoldersSelector } from "../../../../../store/selectors";
+import { FoldersSelector, UserInfo } from "../../../../../store/selectors";
 import { SetFolder } from "../../../../../store/slices/foldersSlice";
 import axiosInstance from "../../../../../helpers/axiosConfig";
 import { collections } from "../../../../../static/api";
+import { useChromecast } from "../../../../../hooks/useChromecast";
+import { RiCastLine } from "react-icons/ri";
 
 import edit from "../../../../../assets/icons/edit.png";
 import settings from "../../../assets/icons/settings.png";
@@ -29,7 +31,9 @@ export const CatalogHeader = () => {
   const navigate = useNavigate();
 
   const { folderItem } = useSelector(FoldersSelector);
+  const { userInfo } = useSelector(UserInfo);
   const [display, setDisplay] = React.useState("grid");
+  const { isAvailable, castToChromecast } = useChromecast();
 
   React.useEffect(() => {}, [folderItem.id]);
   React.useEffect(() => {
@@ -45,7 +49,7 @@ export const CatalogHeader = () => {
   };
 
   const handleCarouselOpen = () => {
-    navigate(`/dashboard/${folderItem.name}/carousel`);
+    navigate(`/player/${folderItem.id}`);
   };
 
   const handleDragEnter = (e) => {
@@ -60,6 +64,13 @@ export const CatalogHeader = () => {
     // notification.success({
     //   message: "link copied to clipboard",
     // });
+  };
+
+  const handleChromecast = (e) => {
+    e.stopPropagation();
+    // Use public player route for Chromecast (can be accessed without auth)
+    const carouselUrl = `${window.location.origin}/#/${userInfo?.id}/${folderItem.id}/carousel`;
+    castToChromecast(carouselUrl);
   };
 
   const handleChangeView = async (view) => {
@@ -95,7 +106,7 @@ export const CatalogHeader = () => {
             className={"header__section__img"}
             width={24}
             height={24}
-            src={list}
+            src={grid}
             alt="place"
             title={"View"}
             onClick={() => handleChangeView("grid")}
@@ -103,7 +114,7 @@ export const CatalogHeader = () => {
         ) : (
           <img
             className={"header__section__img"}
-            src={grid}
+            src={list}
             alt="place"
             title={"View"}
             onClick={() => handleChangeView("list")}
@@ -143,6 +154,19 @@ export const CatalogHeader = () => {
           onClick={handleCarouselOpen}
           title={"Play"}
         />
+
+        {isAvailable && (
+          <RiCastLine
+            className={"header__section__img"}
+            style={{
+              marginLeft: "17px",
+              fontSize: "20px",
+              cursor: "pointer",
+            }}
+            onClick={handleChromecast}
+            title={"Cast to Chromecast"}
+          />
+        )}
         {/*<img*/}
         {/*  src={share}*/}
         {/*  alt="share"*/}

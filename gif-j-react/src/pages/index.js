@@ -5,4 +5,5 @@ export * from "./registration";
 export * from "./reset";
 export * from "./favourite";
 export * from "./mostFavorite";
-export * from "./publicCarousel";
+export * from "./player";
+export * from "./learnMore";

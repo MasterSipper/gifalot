@@ -14,7 +14,7 @@ export const CardContainer = ({ onRemove, index, item, moveCard }) => {
   React.useEffect(() => {}, [folderItem.view]);
 
   return folderItem.view === "grid" ? (
-    <Col md={12} lg={8} xxl={6} key={item.id} className={"col"}>
+    <Col xs={12} sm={12} md={6} lg={6} xl={6} xxl={6} key={item.id} className={"col"}>
       <Card index={index} item={item} moveCard={moveCard} className={"card"}>
         <ImageCard inCatalog={true} item={item} onRemove={onRemove} />
       </Card>

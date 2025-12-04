@@ -16,7 +16,7 @@ export const Favorite = () => {
     fetchFav()
       .then((res) => setFavorite(res))
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchFav]);
 
   const removeItem = async (id) => {
     await removeFromFav(id);

@@ -34,7 +34,7 @@ export const DashboardPage = () => {
       dispatch(setImages([]));
       dispatch(dragClosed());
     }
-  }, [location.pathname]);
+  }, [location.pathname, dispatch]);
 
   const handleAddClick = async () => {
     try {

@@ -30,7 +30,7 @@ export const Catalog = () => {
     if (folderItem?.justCreated) {
       dispatch(renameOpen());
     }
-  }, []);
+  }, [dispatch, folderItem?.justCreated]);
 
   const handleDelete = async () => {
     dispatch(RemoveFolder(folderItem.id));

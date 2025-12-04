@@ -22,7 +22,7 @@ export const FolderItem = ({ folder, onClick }) => {
     e.stopPropagation();
     dispatch(SetFolder(folder));
     dispatch(getFoldersImages({ userId: userInfo.id, id }));
-    navigate(`/dashboard/${id}/carousel`);
+    navigate(`/player/${id}`);
   };
 
   // const handleShare = (e) => {

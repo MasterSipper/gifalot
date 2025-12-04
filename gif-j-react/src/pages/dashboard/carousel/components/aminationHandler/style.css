@@ -23,3 +23,11 @@
         opacity: 1;
     }
 }
+
+/* Override animations for 2up/4up - always show when active */
+.carousel__item-wrapper--2up .animation-handler.active,
+.carousel__item-wrapper--4up .animation-handler.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: none !important; /* Disable animations for 2up/4up to ensure visibility */
+}

@@ -5,6 +5,7 @@ import { GoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useCaptcha } from "../../../hooks/useCaptcha";
 import { register } from "../../../store/slices/userSlice";
 import { useDispatch } from "react-redux";
+import { routes } from "../../../static/routes";
 
 export const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -13,8 +14,35 @@ export const RegistrationForm = () => {
   const { clickHandler, token, handleVerify } = useCaptcha();
 
   const onFinish = async (values) => {
-    await dispatch(register({ ...values, token }));
-    navigate(`/`);
+    const result = await dispatch(register({ ...values, token }));
+    
+    // Check if registration was successful and we have a redirect URL
+    if (result.type === 'auth/register/fulfilled') {
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        // Extract folderId from player URL if it's a public player
+        const playerMatch = redirectUrl.match(/\/(\d+)\/(\d+)\/carousel/);
+        if (playerMatch) {
+          // Public player URL - redirect to compilation edit page for that folder
+          const folderId = playerMatch[2];
+          navigate(`/${routes.dashboard}/${folderId}`);
+        } else {
+          // Try to extract folderId from private player URL
+          const privatePlayerMatch = redirectUrl.match(/\/player\/(\d+)/);
+          if (privatePlayerMatch) {
+            const folderId = privatePlayerMatch[1];
+            navigate(`/${routes.dashboard}/${folderId}`);
+          } else {
+            navigate(redirectUrl);
+          }
+        }
+      } else {
+        navigate(routes.login);
+      }
+    } else {
+      // Registration failed, stay on page
+    }
   };
 
   return (

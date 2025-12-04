@@ -26,7 +26,7 @@ export const UploadSection = () => {
     useSelector(FoldersSelector);
   const [gifs, setGifs] = React.useState([]);
 
-  const sendRanks = async (data) => {
+  const sendRanks = React.useCallback(async (data) => {
     // не забыть фиксануть, чтобы бек каждый раз не дергался
     const ranks = data.map((gif) => {
       return gif.id;
@@ -34,7 +34,7 @@ export const UploadSection = () => {
     await axiosInstance.patch(`${collections}/${folderItem.id}`, {
       ranks,
     });
-  };
+  }, [folderItem.id]);
 
   React.useEffect(() => {
     setGifs(folderImages);
@@ -59,7 +59,7 @@ export const UploadSection = () => {
       sendRanks(data);
       dispatch(setImages(data));
     },
-    [gifs]
+    [gifs, dispatch, sendRanks]
   );
 
   const renderCard = () =>

@@ -41,8 +41,30 @@ export const LoginForm = () => {
       
       // Only navigate if login was successful
       if (login.fulfilled.match(result)) {
-        console.log("Login successful, navigating to dashboard");
-        navigate(`/${routes.dashboard}`);
+        console.log("Login successful, checking for redirect");
+        // Check if we have a redirect URL stored
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          sessionStorage.removeItem('redirectAfterLogin');
+          // Extract folderId from player URL if it's a public player
+          const playerMatch = redirectUrl.match(/\/(\d+)\/(\d+)\/carousel/);
+          if (playerMatch) {
+            // Public player URL - redirect to compilation edit page for that folder
+            const folderId = playerMatch[2];
+            navigate(`/${routes.dashboard}/${folderId}`);
+          } else {
+            // Try to extract folderId from private player URL
+            const privatePlayerMatch = redirectUrl.match(/\/player\/(\d+)/);
+            if (privatePlayerMatch) {
+              const folderId = privatePlayerMatch[1];
+              navigate(`/${routes.dashboard}/${folderId}`);
+            } else {
+              navigate(redirectUrl);
+            }
+          }
+        } else {
+          navigate(`/${routes.dashboard}`);
+        }
       } else {
         console.log("Login failed or rejected");
       }

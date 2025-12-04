@@ -50,13 +50,16 @@ export const AnimationHandler = ({
   //   };
   // }, []);
 
+  // Always apply animation-handler class, and active class only when isActive is true
+  const className = `animation-handler ${isActive ? `${type || ''} active` : ''}`.trim();
+  
   return (
     <div
-      className={isActive ? type : ""}
+      className={className}
       ref={imageRef}
       style={{
         animationDuration: `${transitionDuration}ms`,
-        transform: `rotate(${rotation}deg)`,
+        transform: `rotate(${rotation || 0}deg)`,
       }}
     >
       {children}

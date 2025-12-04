@@ -43,7 +43,7 @@ export const CarouselModal = () => {
                         <p className={"text"}>...or go back to </p>
                         <Button
                             className={"main__bottom__auth__btn"}
-                            onClick={() => navigate(`/${routes.dashboard}`)}
+                            onClick={() => navigate(`/${routes.dashboard}/${folderItem?.id}`)}
                         >
                             Compilation page
                         </Button>

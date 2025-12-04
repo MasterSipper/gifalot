@@ -10,7 +10,7 @@ import {
   settingsClosed,
   viewModalOpen,
 } from "../../../store/modalSlice/modalSlice";
-import { SelectsOptions } from "../../../../../static/selectsOptions";
+import { SelectsOptions, templateSelectOptions } from "../../../../../static/selectsOptions";
 
 import timer from "../../../assets/icons/timer.png";
 import trans from "../../../assets/icons/transition.png";
@@ -25,9 +25,17 @@ export const SettingModal = () => {
 
   const initialSeconds = folderItem?.timePerSlide / 1000;
   const initialAnimation = folderItem?.transitionType;
+  const initialTemplate = folderItem?.template || "1up";
 
   const [seconds, setSeconds] = React.useState(initialSeconds);
   const [animation, setAnimation] = React.useState(initialAnimation);
+  const [template, setTemplate] = React.useState(initialTemplate);
+
+  React.useEffect(() => {
+    setSeconds(folderItem?.timePerSlide / 1000);
+    setAnimation(folderItem?.transitionType);
+    setTemplate(folderItem?.template || "1up");
+  }, [folderItem]);
 
   const handleInputChange = (value) => {
     setSeconds((prevState) => value);
@@ -37,6 +45,10 @@ export const SettingModal = () => {
     setAnimation((prevState) => value);
   };
 
+  const handleTemplate = (value) => {
+    setTemplate((prevState) => value);
+  };
+
   const handleViewModalOpen = (e) => {
     e.stopPropagation();
     dispatch(settingsClosed());
@@ -44,15 +56,17 @@ export const SettingModal = () => {
   };
 
   const handleCancel = async () => {
-    if (seconds !== initialSeconds || animation !== initialAnimation) {
+    if (seconds !== initialSeconds || animation !== initialAnimation || template !== initialTemplate) {
       await axiosInstance.patch(`${collections}/${folderItem.id}`, {
         timePerSlide: seconds * 1000,
         transitionType: animation,
+        template: template,
       });
       const item = {
         ...folderItem,
         timePerSlide: seconds * 1000,
         transitionType: animation,
+        template: template,
       };
       dispatch(SetFolder(item));
     }
@@ -74,7 +88,7 @@ export const SettingModal = () => {
         <img src={timer} alt={timer} />
         <p>Duration per image:</p>
         <InputNumber
-          defaultValue={seconds}
+          value={seconds}
           className={"box__input"}
           onChange={handleInputChange}
           max={15}
@@ -86,10 +100,21 @@ export const SettingModal = () => {
         <img src={trans} alt={"transitionIn"} />
         <p>Animation:</p>
         <Select
-          defaultValue={initialAnimation}
+          value={animation}
           className={"box__select"}
           onChange={handleAnimation}
           options={SelectsOptions}
+        />
+      </div>
+
+      <div className={"setting_modal__box"}>
+        <img src={trans} alt={"template"} />
+        <p>Template:</p>
+        <Select
+          value={template}
+          className={"box__select"}
+          onChange={handleTemplate}
+          options={templateSelectOptions}
         />
       </div>
 

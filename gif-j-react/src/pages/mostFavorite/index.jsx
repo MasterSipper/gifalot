@@ -16,7 +16,7 @@ export const MostFavorite = () => {
     fetchMostFav()
       .then((res) => setMostFavGif(res))
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchMostFav]);
 
   const renderItem = () => {
     return mostFavGif?.map((item) => {

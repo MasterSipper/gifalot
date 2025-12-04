@@ -156,10 +156,6 @@ export const ModalSearch = () => {
     }
   }, [addGifs.length]);
 
-  const reset = () => {
-    return false;
-  };
-
   const renderGif = () =>
     gifs?.map((gif) => {
       return (
