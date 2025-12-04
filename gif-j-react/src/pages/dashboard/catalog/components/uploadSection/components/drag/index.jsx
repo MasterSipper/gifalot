@@ -17,6 +17,7 @@ export const Drag = () => {
   const { drag } = useSelector(modalSelector);
   const { folderItem } = useSelector(FoldersSelector);
   const dispatch = useDispatch();
+  const [uploading, setUploading] = React.useState(false);
 
   // Track files being uploaded to prevent duplicates
   const uploadingFilesRef = React.useRef(new Set());
