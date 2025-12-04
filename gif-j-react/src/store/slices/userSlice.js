@@ -141,7 +141,21 @@ export const userSlice = createSlice({
       state.loading = false;
       const error = payload?.error;
       
-      if (error?.response) {
+      // Don't show errors if auth is disabled
+      if (DISABLE_AUTH) {
+        console.log("Login attempted but auth is disabled - ignoring error");
+        return;
+      }
+      
+      // Check for network/connection errors
+      const isNetworkError = !error?.response && (error?.message === "Network Error" || error?.code === "ERR_NETWORK" || error?.code === "ECONNREFUSED");
+      
+      if (isNetworkError) {
+        notification.error({
+          message: "Connection Error",
+          description: "Unable to connect to the server. Please make sure the backend server is running and try again.",
+        });
+      } else if (error?.response) {
         const status = error.response.status;
         const message = error.response.data?.message || error.response.data?.error || error.message;
         
@@ -164,11 +178,16 @@ export const userSlice = createSlice({
       } else {
         notification.error({
           message: "Login failed",
-          description: error?.message || "Unable to connect to server. Please check your connection.",
+          description: error?.message || "An unexpected error occurred. Please try again.",
         });
       }
       
-      console.error("Login error:", error);
+      if (process.env.NODE_ENV === 'development') {
+        // Only log errors in development, or if auth is enabled
+      if (process.env.NODE_ENV === 'development' || !DISABLE_AUTH) {
+        console.error("Login error:", error);
+      }
+      }
     });
     builder.addCase(register.pending, (state) => {
       state.loading = true;
@@ -182,9 +201,42 @@ export const userSlice = createSlice({
     });
     builder.addCase(register.rejected, (state, { payload }) => {
       state.loading = false;
-      notification.open({
-        message: payload?.error.message,
-      });
+      const error = payload?.error;
+      
+      // Check for network/connection errors
+      const isNetworkError = !error?.response && (error?.message === "Network Error" || error?.code === "ERR_NETWORK" || error?.code === "ECONNREFUSED");
+      
+      if (isNetworkError) {
+        notification.error({
+          message: "Connection Error",
+          description: "Unable to connect to the server. Please make sure the backend server is running and try again.",
+        });
+      } else if (error?.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || error.response.data?.error || error.message;
+        
+        if (status === 400) {
+          notification.error({
+            message: message || "Registration failed",
+            description: "Please check your information and try again",
+          });
+        } else if (status === 403) {
+          notification.error({
+            message: "reCAPTCHA verification failed",
+            description: "Please try again",
+          });
+        } else {
+          notification.error({
+            message: "Registration failed",
+            description: message || "An error occurred. Please try again.",
+          });
+        }
+      } else {
+        notification.error({
+          message: "Registration failed",
+          description: error?.message || "An unexpected error occurred. Please try again.",
+        });
+      }
     });
     builder.addCase(logOut.pending, (state) => {
       state.loading = true;

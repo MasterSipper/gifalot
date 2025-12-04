@@ -66,7 +66,9 @@ export const LoginForm = () => {
           navigate(`/${routes.dashboard}`);
         }
       } else {
-        console.log("Login failed or rejected");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Login failed or rejected");
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

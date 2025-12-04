@@ -1,11 +1,11 @@
 import axios from "axios";
-import { apiUrl, loginRoute, refreshRoute } from "../static/api";
+import { apiUrl, loginRoute, refreshRoute, regRoute } from "../static/api";
 import { TokenService } from "./tokenService";
 import { notification } from "antd";
 import { userService } from "./userService";
 
 const axiosInstance = axios.create({
-  baseURL: `${apiUrl}`,
+  baseURL: apiUrl || undefined, // Use undefined if empty string to prevent invalid URLs
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,11 +14,18 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Routes that don't require authentication
+    const publicRoutes = [loginRoute, regRoute, refreshRoute];
+    const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
+    
     const token = TokenService.getAccessToken();
     if (token) {
       config.headers["authorization"] = `Bearer ${token}`;
-    } else {
-      console.warn("No access token found for request:", config.url);
+    } else if (!isPublicRoute) {
+      // Only warn for non-public routes that are missing tokens (and only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn("No access token found for request:", config.url);
+      }
     }
     return config;
   },
