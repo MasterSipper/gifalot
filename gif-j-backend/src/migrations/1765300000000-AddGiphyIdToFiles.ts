@@ -13,3 +13,4 @@ export class AddGiphyIdToFiles1765300000000 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`files\` DROP COLUMN \`giphyId\``);
     }
 }
+

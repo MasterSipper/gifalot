@@ -10,3 +10,4 @@ Set-Location $PSScriptRoot
 & cmd /c "npm start"
 
 
+

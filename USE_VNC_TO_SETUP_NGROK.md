@@ -144,3 +144,4 @@ pm2 restart gifalot-backend
 - **You can disconnect VNC** after services are running - they'll keep running on the VPS
 
 
+

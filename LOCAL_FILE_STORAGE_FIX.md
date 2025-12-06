@@ -41,3 +41,4 @@ The problem is not the file type - it's that files don't have URLs to display th
 2. **For Production:** Set up AWS S3 (Option 1)
 
 
+

@@ -82,3 +82,4 @@ You can test if credentials work by using AWS CLI or a tool like Postman to dire
 - **Invalid credentials**: Double-check Access Key ID and Secret Key
 
 
+

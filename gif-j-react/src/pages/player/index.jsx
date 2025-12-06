@@ -204,11 +204,11 @@ export const Player = () => {
     let slides = 0;
     let idx = 0;
     const items = isPublic ? state : folderImages;
-    const defaultTemplate = isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
     
     while (idx < items.length) {
       const item = items[idx];
-      const template = item?.template || defaultTemplate;
+      // Template is stored per-file, not per-collection, so use file template or default to "1up"
+      const template = item?.template || "1up";
       const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
                        template === "1up" ? 1 : 
                        template === "2next" ? 2 : 4;
@@ -228,8 +228,8 @@ export const Player = () => {
     let itemIdx = 0;
     for (let i = 0; i < slideIndex && itemIdx < state.length; i++) {
       const item = state[itemIdx];
-      const defaultTemplate = isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
-      const template = item?.template || defaultTemplate;
+      // Template is stored per-file, not per-collection, so use file template or default to "1up"
+      const template = item?.template || "1up";
       const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
                        template === "1up" ? 1 : 
                        template === "2next" ? 2 : 4;
@@ -309,11 +309,11 @@ export const Player = () => {
     let idx = 0;
     let slideIdx = 0;
     const items = state;
-    const defaultTemplate = isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
     
     while (idx < items.length) {
       const item = items[idx];
-      const template = item?.template || defaultTemplate;
+      // Template is stored per-file, not per-collection, so use file template or default to "1up"
+      const template = item?.template || "1up";
       
       let slideItems = [];
       let advanceBy = 1;
@@ -520,16 +520,17 @@ export const Player = () => {
 
   const getCurrentTemplate = () => {
     if (state.length === 0) {
-      return isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
+      // Template is stored per-file, not per-collection, so default to "1up"
+      return "1up";
     }
     
     let idx = 0;
     let slideIdx = 0;
-    const defaultTemplate = isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
     
     while (idx < state.length && slideIdx < slideIndex) {
       const item = state[idx];
-      const template = item?.template || defaultTemplate;
+      // Template is stored per-file, not per-collection, so use file template or default to "1up"
+      const template = item?.template || "1up";
       
       if (template === "1up") {
         idx += 1;
@@ -542,9 +543,10 @@ export const Player = () => {
     }
     
     if (idx < state.length) {
-      return state[idx]?.template || defaultTemplate;
+      // Template is stored per-file, not per-collection, so use file template or default to "1up"
+      return state[idx]?.template || "1up";
     }
-    return defaultTemplate;
+    return "1up";
   };
 
   if (loading) {

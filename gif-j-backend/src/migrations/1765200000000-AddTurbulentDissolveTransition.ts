@@ -19,3 +19,4 @@ export class AddTurbulentDissolveTransition1765200000000 implements MigrationInt
         await queryRunner.query(`ALTER TABLE \`collections\` CHANGE \`transitionType\` \`transitionType\` enum ('dissolve', 'fadeIn', 'fadeInOut', 'flash', 'rubberBand', 'shakeX', 'shakeY', 'wobble', 'jello', 'heartBeat', 'fragment') NOT NULL DEFAULT 'fadeInOut'`);
     }
 }
+

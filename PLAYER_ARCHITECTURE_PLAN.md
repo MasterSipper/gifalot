@@ -119,3 +119,4 @@ Create a `PlayerModal` component that:
 4. Do we need different styling for public vs private players?
 
 
+

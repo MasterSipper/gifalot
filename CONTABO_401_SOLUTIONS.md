@@ -58,3 +58,4 @@ The backend should log the presigned URL when you try to upload. Check those log
 **Option 1 (Upload through backend)** is the most reliable solution and avoids CORS issues entirely. Should I implement it?
 
 
+

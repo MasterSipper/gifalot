@@ -67,3 +67,4 @@ https://dev.gifalot.com/gif-j/
 Once you have access (SSH/VNC/Console), it's just these 4 commands!
 
 
+

@@ -163,3 +163,4 @@ After setting up the environment variable:
 - Deploy previews: `https://deploy-preview-123--gifalot.netlify.app`
 
 
+

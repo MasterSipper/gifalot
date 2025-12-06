@@ -168,3 +168,4 @@ SSL certificate needs to be on your **VPS** (where your backend is), not on Simp
 The only challenge is getting VPS access to install it. Once you have access, it's just one command!
 
 
+

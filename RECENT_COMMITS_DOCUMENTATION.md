@@ -154,3 +154,4 @@ If a link doesn't work:
 2. Verify compilation is public (not private)
 3. Check that `REACT_APP_API_URL` is set correctly in Netlify
 4. Verify backend is accessible from Netlify domain
+

@@ -133,3 +133,4 @@ When someone opens a public link, the frontend calls:
 3. **Create a compilation** and make it public
 
 4. **Share the link** - it will use the Netlify URL and work on any computer!
+

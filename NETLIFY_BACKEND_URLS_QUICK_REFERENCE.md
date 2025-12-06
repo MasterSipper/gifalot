@@ -52,3 +52,4 @@ Once you configure SSL/HTTPS on your VPS, update all URLs to:
 - Or `https://38.242.204.63/gif-j/` (if SSL is configured for IP)
 
 
+

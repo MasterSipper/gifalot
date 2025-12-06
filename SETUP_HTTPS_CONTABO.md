@@ -349,3 +349,4 @@ REACT_APP_API_URL=https://dev.gifalot.com/gif-j/
 ✅ No more mixed content errors
 ✅ Public compilation links will work
 ✅ Secure connection between frontend and backend
+

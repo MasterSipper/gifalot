@@ -84,3 +84,4 @@ REACT_APP_API_URL=http://localhost:3000/gif-j/
 Or adjust the port if your backend runs on a different port (like 3001).
 
 
+

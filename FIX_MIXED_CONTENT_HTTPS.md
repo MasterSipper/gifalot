@@ -146,3 +146,4 @@ If you can't set up HTTPS immediately, you can temporarily:
    - Requires domain setup
 
 **Best practice:** Always use HTTPS for both frontend and backend in production.
+

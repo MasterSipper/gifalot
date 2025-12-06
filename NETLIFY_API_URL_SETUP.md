@@ -115,3 +115,4 @@ Once `REACT_APP_API_URL` is set and deployed:
 - ✅ API calls will go to your Contabo backend
 - ✅ No more `ERR_NAME_NOT_RESOLVED` errors
 - ✅ Compilations will load correctly
+

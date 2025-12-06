@@ -126,3 +126,4 @@ Once you have the correct password:
 **Most likely solution:** Go to Contabo control panel and reset the root password. It's usually under "Reset Password" or "Change Password" in your VPS management section.
 
 
+

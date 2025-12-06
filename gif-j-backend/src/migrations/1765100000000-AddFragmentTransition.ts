@@ -19,3 +19,4 @@ export class AddFragmentTransition1765100000000 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE \`collections\` CHANGE \`transitionType\` \`transitionType\` enum ('dissolve', 'fadeIn', 'fadeInOut', 'flash', 'rubberBand', 'shakeX', 'shakeY', 'wobble', 'jello', 'heartBeat') NOT NULL DEFAULT 'fadeInOut'`);
     }
 }
+

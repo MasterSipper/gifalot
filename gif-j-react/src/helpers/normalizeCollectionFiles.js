@@ -14,6 +14,8 @@ export const normalizeCollectionFiles = (collection, files) => {
     ...file,
     timePerSlide: file.timePerSlide ?? fallbackDuration,
     transitionType: file.transitionType ?? collection?.transitionType,
+    // Preserve template field - it's set per-file, not per-collection
+    template: file.template ?? null,
   });
 
   if (ranks.length > 0) {

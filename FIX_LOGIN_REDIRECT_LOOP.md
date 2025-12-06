@@ -74,3 +74,4 @@ After deploying, when you experience the login redirect loop:
 ## Files Modified
 - `gif-j-react/src/helpers/axiosConfig.js` - Enhanced interceptor with persistent logging
 - `gif-j-react/src/store/slices/userSlice.js` - Enhanced login logging
+

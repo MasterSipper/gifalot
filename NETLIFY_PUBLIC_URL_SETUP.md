@@ -80,3 +80,4 @@ After Netlify deploys:
 ⏳ Netlify will auto-deploy (check Deploys tab)
 ⏳ **Action needed:** Add `REACT_APP_PUBLIC_URL` environment variable in Netlify
 ⏳ **Action needed:** Trigger new deploy after adding env var
+
