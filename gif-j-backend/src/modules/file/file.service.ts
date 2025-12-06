@@ -546,6 +546,26 @@ export class FileService {
 
     try {
       await this.fileRepository.update(id, body);
+      // Reload the file to get updated values
+      const updatedFile = await this.fileRepository.findOne({
+        where: { id },
+        relations: ['collection'],
+      });
+      
+      if (!updatedFile) {
+        throw new BadRequestException(ErrorCodes.FILE_NOT_FOUND);
+      }
+
+      // Get file URL and return in API format
+      try {
+        const key = this.buildKey(updatedFile.id, userId, updatedFile.collectionId, updatedFile.ext);
+        const url = await this.getFileUrl(key, 'inline', updatedFile.originalUrl);
+        return updatedFile.toAPI(url);
+      } catch (error) {
+        console.error(`Error getting file URL for file ${updatedFile.id}, using original URL:`, error);
+        const fallbackUrl = updatedFile.originalUrl || null;
+        return updatedFile.toAPI(fallbackUrl ?? undefined);
+      }
     } catch (error) {
       console.error('Error updating file:', error);
       throw new BadRequestException(`Failed to update file: ${error.message}`);

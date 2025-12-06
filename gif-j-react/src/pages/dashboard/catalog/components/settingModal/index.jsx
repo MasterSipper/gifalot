@@ -1,10 +1,10 @@
 import React from "react";
 import { InputNumber, Modal, Select } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { FoldersSelector } from "../../../../../store/selectors";
+import { FoldersSelector, UserInfo } from "../../../../../store/selectors";
 import axiosInstance from "../../../../../helpers/axiosConfig";
 import { collections, file } from "../../../../../static/api";
-import { SetFolder, setImages } from "../../../../../store/slices/foldersSlice";
+import { SetFolder, setImages, getFoldersImages } from "../../../../../store/slices/foldersSlice";
 import { modalSelector } from "../../../store/selector/modalSelector";
 import {
   settingsClosed,
@@ -21,11 +21,29 @@ export const SettingModal = () => {
   const dispatch = useDispatch();
 
   const { folderItem, folderImages } = useSelector(FoldersSelector);
+  const { userInfo } = useSelector(UserInfo);
   const { settings } = useSelector(modalSelector);
 
   const initialSeconds = folderItem?.timePerSlide / 1000;
   const initialAnimation = folderItem?.transitionType;
-  const initialTemplate = folderItem?.template || "1up";
+  
+  // Determine initial template from files - use the most common template, or "1up" as default
+  const initialTemplate = React.useMemo(() => {
+    if (!folderImages || folderImages.length === 0) {
+      return "1up";
+    }
+    // Count template occurrences
+    const templateCounts = {};
+    folderImages.forEach((item) => {
+      const tpl = item.template || "1up";
+      templateCounts[tpl] = (templateCounts[tpl] || 0) + 1;
+    });
+    // Return the most common template, or "1up" if all are different/null
+    const mostCommon = Object.keys(templateCounts).reduce((a, b) =>
+      templateCounts[a] > templateCounts[b] ? a : b
+    );
+    return mostCommon || "1up";
+  }, [folderImages]);
 
   const [seconds, setSeconds] = React.useState(initialSeconds);
   const [animation, setAnimation] = React.useState(initialAnimation);
@@ -34,8 +52,8 @@ export const SettingModal = () => {
   React.useEffect(() => {
     setSeconds(folderItem?.timePerSlide / 1000);
     setAnimation(folderItem?.transitionType);
-    setTemplate(folderItem?.template || "1up");
-  }, [folderItem]);
+    setTemplate(initialTemplate);
+  }, [folderItem, initialTemplate]);
 
   const handleInputChange = (value) => {
     setSeconds((prevState) => value);
@@ -65,21 +83,24 @@ export const SettingModal = () => {
       
       // Update template for all files in the collection
       if (template !== initialTemplate && folderImages && folderImages.length > 0) {
-        // Update all files with the new template
-        const updatePromises = folderImages.map((fileItem) =>
-          axiosInstance.patch(`${file}/${fileItem.id}`, {
-            template: template,
-          })
-        );
-        
-        await Promise.all(updatePromises);
-        
-        // Update local state
-        const updatedImages = folderImages.map((item) => ({
-          ...item,
-          template: template,
-        }));
-        dispatch(setImages(updatedImages));
+        try {
+          // Update all files with the new template
+          const updatePromises = folderImages.map((fileItem) =>
+            axiosInstance.patch(`${file}/${fileItem.id}`, {
+              template: template,
+            })
+          );
+          
+          await Promise.all(updatePromises);
+          
+          // Reload files from backend to ensure we have the latest data
+          if (userInfo?.id && folderItem?.id) {
+            await dispatch(getFoldersImages({ userId: userInfo.id, id: folderItem.id }));
+          }
+        } catch (error) {
+          console.error('Error updating file templates:', error);
+          // Still close the modal even if there's an error
+        }
       }
       
       const item = {
