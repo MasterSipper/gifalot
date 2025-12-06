@@ -35,13 +35,19 @@ ps aux | grep node
 ps aux | grep nest
 ```
 
-Once you find the directory, navigate to it. Common locations might be:
+Once you find the directory, navigate to it. Common locations:
+- `/home/ansible/services/dev/gif-j-backend` (Ansible deployment - **this is your location**)
 - `/opt/gifalot/gif-j-backend`
-- `/home/root/services/dev/gif-j-backend` (if using Ansible deployment)
 - `/var/www/gifalot/gif-j-backend`
-- Or wherever you originally cloned the repository
 
-### Step 2: Find the Docker Container and Working Directory
+### Step 2: Navigate to Backend Directory
+
+```bash
+# Navigate to the backend directory
+cd /home/ansible/services/dev/gif-j-backend
+```
+
+### Step 3: Find the Docker Container and Working Directory
 
 ```bash
 # List running Docker containers to find the backend
@@ -52,15 +58,6 @@ docker inspect <container-name> | grep -i "workingdir\|source"
 
 # Or check docker-compose location
 docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
-```
-
-### Step 3: Navigate to Backend Directory
-
-Once you find where the docker-compose.yml file is located:
-
-```bash
-# Navigate to the directory containing docker-compose.yml
-cd /path/to/gif-j-backend
 ```
 
 ### Step 4: Pull Latest Code from Dev Branch
