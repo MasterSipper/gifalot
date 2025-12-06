@@ -9,7 +9,7 @@ async function bootstrap() {
   // Configure CORS for production
   const allowedOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',')
-    : ['http://localhost:3000', 'https://gifalot.netlify.app'];
+    : ['http://localhost:3000', 'http://localhost:3001', 'https://gifalot.netlify.app'];
 
   app.enableCors({
     origin: allowedOrigins,

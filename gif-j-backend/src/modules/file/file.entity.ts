@@ -46,7 +46,14 @@ export class File {
   public template: string | null;
 
   @Column({ type: 'varchar', nullable: true })
+  public filter: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   public originalUrl: string | null;
+
+  @Index()
+  @Column({ type: 'varchar', nullable: true })
+  public giphyId: string | null;
 
   @Column({ type: 'integer', nullable: true })
   public width: number | null;
@@ -75,6 +82,7 @@ export class File {
       transitionType: this.transitionType,
       rotation: this.rotation,
       template: this.template,
+      filter: this.filter,
       width: this.width,
       height: this.height,
       isFavorite: !!favoriteDate,

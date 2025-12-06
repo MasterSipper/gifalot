@@ -8,14 +8,14 @@ import {
   ResetPage,
   Favorite,
   MostFavorite,
-  PublicCarousel,
 } from "../pages";
 import { routes } from "../static/routes";
 import { Layout } from "../components";
 import { PrivateRoute } from "./privateRoute";
 import { RememberMe } from "./RememberMe";
 import { Catalog } from "../pages/dashboard/catalog";
-import { InnerCarouser } from "../pages/dashboard/carousel/innerCarouser";
+import { Player } from "../pages/player";
+import { LearnMore } from "../pages/learnMore";
 
 export const router = createHashRouter([
   {
@@ -45,12 +45,6 @@ export const router = createHashRouter([
           {
             path: routes.gifs,
             element: <Catalog />,
-            children: [
-              {
-                path: routes.carousel,
-                element: <InnerCarouser />,
-              },
-            ],
           },
         ],
       },
@@ -65,8 +59,20 @@ export const router = createHashRouter([
     ],
   },
   {
-    path: routes.publicCarousel,
-    element: <PublicCarousel />,
+    path: routes.publicPlayer,
+    element: <Player />,
+  },
+  {
+    path: routes.player,
+    element: (
+      <PrivateRoute>
+        <Player />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: routes.learnMore,
+    element: <LearnMore />,
   },
   {
     path: routes.reset,

@@ -9,3 +9,4 @@ Set-Location $PSScriptRoot
 # Start npm in a way that bypasses execution policy
 & cmd /c "npm start"
 
+

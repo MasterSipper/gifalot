@@ -15,7 +15,7 @@ import { getFoldersImages, SetFolder } from "../../store/slices/foldersSlice";
 import { routes } from "../../static/routes";
 import { PlayerModal } from "./components/playerModal";
 import { PrivateErrorModal } from "./components/privateErrorModal";
-import { ErrorModal } from "../publicCarousel/components";
+import { ErrorModal } from "./components/errorModal";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import "../dashboard/carousel/style.css";
@@ -92,37 +92,56 @@ export const Player = () => {
       setError(false);
       setIsPrivateError(false);
     } catch (err) {
-      console.log("Public data fetch error:", err);
+      // Enhanced error logging for debugging
+      console.log("=== Public Collection Access Error ===");
+      console.log("API URL:", `${apiUrl}${collections}/${userIdNum}/${folderIdNum}`);
+      console.log("Error:", err);
       console.log("Error response:", err.response);
       console.log("Error status:", err.response?.status);
       console.log("Error data:", err.response?.data);
-      // Check if it's a private compilation error
-      // Check status codes: 403 (Forbidden), 401 (Unauthorized), or 400 (Bad Request) with private-related message
-      const errorData = err.response?.data;
-      const errorMessage = errorData?.message || errorData?.error || '';
-      const errorCode = errorData?.error || errorData?.code || '';
-      const errorString = JSON.stringify(errorData || {}).toLowerCase();
+      console.log("Error message:", err.message);
       
+      // Check if it's a private compilation error
+      // NestJS ForbiddenException typically returns:
+      // { statusCode: 403, message: "...", error: "Forbidden" }
+      // The error code 'COLLECTION_IS_PRIVATE' may be in the message or error field
+      const errorData = err.response?.data || {};
+      const statusCode = err.response?.status || errorData.statusCode;
+      const errorMessage = errorData.message || errorData.error || err.message || '';
+      const errorCode = errorData.error || errorData.code || '';
+      const errorString = JSON.stringify(errorData).toLowerCase();
+      
+      console.log("Parsed error details:", {
+        statusCode,
+        errorMessage,
+        errorCode,
+        errorString: errorString.substring(0, 200) // Truncate for readability
+      });
+      
+      // Check for private compilation error indicators
+      // A 403 Forbidden status typically means the compilation is private
+      // A 401 Unauthorized might also indicate access issues
       const isPrivateCompilationError = 
-        err.response?.status === 403 || 
-        err.response?.status === 401 ||
-        (err.response?.status === 400 && (
-          errorCode === 'COLLECTION_IS_PRIVATE' ||
-          errorMessage.toLowerCase().includes('private') ||
-          errorString.includes('private') ||
-          errorString.includes('collection_is_private')
-        ));
+        statusCode === 403 || // Forbidden - most common for private compilations
+        statusCode === 401 || // Unauthorized - might indicate auth required
+        errorCode === 'COLLECTION_IS_PRIVATE' ||
+        errorMessage.toLowerCase().includes('private') ||
+        errorMessage.toLowerCase().includes('collection_is_private') ||
+        errorString.includes('private') ||
+        errorString.includes('collection_is_private');
       
       if (isPrivateCompilationError) {
         // Private compilation access denied
-        // If user is logged in but gets 403, they're not the owner
-        // If user is not logged in, they can't access private compilations
-        console.log("Setting isPrivateError to true - detected private compilation error");
+        // Show PrivateErrorModal which explains the compilation is private
+        // and provides options to create an account
+        console.log("✓ Detected private compilation error - showing PrivateErrorModal");
         setIsPrivateError(true);
         setError(false);
       } else {
-        // Other errors
-        console.log("Setting regular error - not a private compilation error");
+        // Other errors (404 Not Found, 500 Server Error, network errors, etc.)
+        // Show generic ErrorModal
+        console.log("✗ Not a private compilation error - showing generic ErrorModal");
+        console.log("This could be: compilation doesn't exist, server error, or network issue");
         setError(true);
         setIsPrivateError(false);
       }
@@ -190,7 +209,7 @@ export const Player = () => {
     while (idx < items.length) {
       const item = items[idx];
       const template = item?.template || defaultTemplate;
-      const advanceBy = template === "2up" || template === "4up" ? 1 : 
+      const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
                        template === "1up" ? 1 : 
                        template === "2next" ? 2 : 4;
       idx += advanceBy;
@@ -211,7 +230,7 @@ export const Player = () => {
       const item = state[itemIdx];
       const defaultTemplate = isPublic ? (catalogData?.template || "1up") : (folderItem?.template || "1up");
       const template = item?.template || defaultTemplate;
-      const advanceBy = template === "2up" || template === "4up" ? 1 : 
+      const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
                        template === "1up" ? 1 : 
                        template === "2next" ? 2 : 4;
       itemIdx += advanceBy;
@@ -311,35 +330,110 @@ export const Player = () => {
       } else if (template === "2up") {
         advanceBy = 1;
         slideItems = [item, item];
+      } else if (template === "2up-mirror-left" || template === "2up-mirror-right") {
+        advanceBy = 1;
+        slideItems = [item, item];
       } else if (template === "4up") {
+        advanceBy = 1;
+        slideItems = [item, item, item, item];
+      } else if (template === "4up-warhol") {
         advanceBy = 1;
         slideItems = [item, item, item, item];
       }
       
       const isActive = slideIdx === slideIndex;
-      const cssTemplate = template === "2next" || template === "2up" ? "2up" :
-                         template === "4next" || template === "4up" ? "4up" : "1up";
+      const cssTemplate = template === "2next" || template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" ? "2up" :
+                         template === "4next" || template === "4up" || template === "4up-warhol" ? "4up" : "1up";
       
       slides.push(
         <div key={`slide-${slideIdx}`} className={`carousel__slide carousel__slide--${cssTemplate}`}>
           {slideItems.map((image, itemIdx) => {
             const isVideo = image?.mimeType && image.mimeType.startsWith('video/');
-            const uniqueKey = template === "2up" || template === "4up" 
+            const uniqueKey = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol"
               ? `${image?.id}-${itemIdx}`
               : image?.id;
+            
+            // Calculate aspect ratio from metadata if available, otherwise will be set on load
+            // Note: For CSS object-fit, we use original dimensions (not swapped) because
+            // the rotation transform is applied separately and object-fit works on the original image
+            const width = image?.width;
+            const height = image?.height;
+            const aspectRatio = width && height ? width / height : null;
+            
+            // Determine orientation class from original aspect ratio (before rotation)
+            // This ensures object-fit works correctly - rotation is handled by CSS transform
+            let orientationClass = '';
+            if (aspectRatio !== null) {
+              if (aspectRatio > 1.1) {
+                orientationClass = 'carousel__item--landscape';
+              } else if (aspectRatio < 0.9) {
+                orientationClass = 'carousel__item--portrait';
+              } else {
+                orientationClass = 'carousel__item--square';
+              }
+            }
+            
+            // For 2up, add slot position class (left or right)
+            // For 4up and 4up-warhol, add slot position class (left column or right column)
+            // For 4up-warhol, also add Warhol tint class
+            let slotPosition = '';
+            let warholTint = '';
+            let filterClass = '';
+            let mirrorClass = '';
+            if (cssTemplate === '2up' && slideItems.length === 2) {
+              slotPosition = itemIdx === 0 ? 'carousel__slot--left' : 'carousel__slot--right';
+              // Add mirror class for mirror templates
+              if (template === "2up-mirror-left" && itemIdx === 0) {
+                mirrorClass = 'carousel__mirror--flip';
+              } else if (template === "2up-mirror-right" && itemIdx === 1) {
+                mirrorClass = 'carousel__mirror--flip';
+              }
+            } else if (cssTemplate === '4up' && slideItems.length === 4) {
+              // 4up grid: 0,2 are left column, 1,3 are right column
+              slotPosition = (itemIdx === 0 || itemIdx === 2) ? 'carousel__slot--left' : 'carousel__slot--right';
+            }
+            
+            // Add Warhol tint class for 4up-warhol template (overrides any filter)
+            if (template === "4up-warhol" && slideItems.length === 4) {
+              // Warhol's Monroe: Yellow, Cyan, Magenta, Green tints
+              const tints = ['warhol-yellow', 'warhol-cyan', 'warhol-magenta', 'warhol-green'];
+              warholTint = `carousel__warhol--${tints[itemIdx]}`;
+            } else if (image?.filter) {
+              // Apply filter class only if not 4up-warhol template
+              filterClass = `carousel__filter--${image.filter}`;
+            }
+            
+            // Set CSS custom properties for precise control (use original dimensions)
+            // Rotation is handled by CSS transform, not by swapping dimensions
+            const styleProps = {
+              ...(width && height ? {
+                '--item-width': `${width}px`,
+                '--item-height': `${height}px`,
+                '--item-aspect-ratio': aspectRatio,
+              } : {}),
+            };
+            
+            // Get transition type with fallback to collection default
+            const defaultTransitionType = isPublic 
+              ? (catalogData?.transitionType || 'fadeInOut')
+              : (folderItem?.transitionType || 'fadeInOut');
+            const transitionType = image?.transitionType || defaultTransitionType;
             
             return (
               <AnimationHandler
                 key={uniqueKey}
                 isActive={isActive}
                 rotation={image?.rotation}
-                type={image?.transitionType}
+                type={transitionType}
                 time={image?.timePerSlide}
               >
-                <div className={`carousel__item-wrapper carousel__item-wrapper--${cssTemplate}`}>
+                <div 
+                  className={`carousel__item-wrapper carousel__item-wrapper--${cssTemplate} ${slotPosition} ${warholTint} ${filterClass} ${mirrorClass}`}
+                  style={styleProps}
+                >
                   {isVideo ? (
                     <video
-                      className={"carousel__item"}
+                      className={`carousel__item ${orientationClass}`}
                       src={image?.url}
                       onClick={(e) => e.stopPropagation()}
                       controls
@@ -349,31 +443,63 @@ export const Player = () => {
                       loop
                       onLoadedMetadata={(e) => {
                         const video = e.target;
-                        const aspectRatio = video.videoWidth / video.videoHeight;
-                        if (aspectRatio > 1.1) {
-                          video.classList.add('carousel__item--landscape');
-                        } else if (aspectRatio < 0.9) {
-                          video.classList.add('carousel__item--portrait');
-                        } else {
-                          video.classList.add('carousel__item--square');
+                        // Use metadata if available, otherwise use video dimensions
+                        // Use original dimensions (not swapped) - rotation is handled by CSS transform
+                        const finalWidth = width || video.videoWidth;
+                        const finalHeight = height || video.videoHeight;
+                        const finalAspectRatio = finalWidth / finalHeight;
+                        
+                        // Update CSS custom properties
+                        const wrapper = video.closest('.carousel__item-wrapper');
+                        if (wrapper) {
+                          wrapper.style.setProperty('--item-width', `${finalWidth}px`);
+                          wrapper.style.setProperty('--item-height', `${finalHeight}px`);
+                          wrapper.style.setProperty('--item-aspect-ratio', finalAspectRatio.toString());
+                        }
+                        
+                        // Add orientation class if not already set
+                        if (!orientationClass) {
+                          if (finalAspectRatio > 1.1) {
+                            video.classList.add('carousel__item--landscape');
+                          } else if (finalAspectRatio < 0.9) {
+                            video.classList.add('carousel__item--portrait');
+                          } else {
+                            video.classList.add('carousel__item--square');
+                          }
                         }
                       }}
                     />
                   ) : (
                     <img
-                      className={"carousel__item"}
+                      className={`carousel__item ${orientationClass}`}
                       src={image?.url}
                       alt={image?.name || "carousel item"}
                       onClick={(e) => e.stopPropagation()}
                       onLoad={(e) => {
                         const img = e.target;
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        if (aspectRatio > 1.1) {
-                          img.classList.add('carousel__item--landscape');
-                        } else if (aspectRatio < 0.9) {
-                          img.classList.add('carousel__item--portrait');
-                        } else {
-                          img.classList.add('carousel__item--square');
+                        // Use metadata if available, otherwise use image dimensions
+                        // Use original dimensions (not swapped) - rotation is handled by CSS transform
+                        const finalWidth = width || img.naturalWidth;
+                        const finalHeight = height || img.naturalHeight;
+                        const finalAspectRatio = finalWidth / finalHeight;
+                        
+                        // Update CSS custom properties
+                        const wrapper = img.closest('.carousel__item-wrapper');
+                        if (wrapper) {
+                          wrapper.style.setProperty('--item-width', `${finalWidth}px`);
+                          wrapper.style.setProperty('--item-height', `${finalHeight}px`);
+                          wrapper.style.setProperty('--item-aspect-ratio', finalAspectRatio.toString());
+                        }
+                        
+                        // Add orientation class if not already set
+                        if (!orientationClass) {
+                          if (finalAspectRatio > 1.1) {
+                            img.classList.add('carousel__item--landscape');
+                          } else if (finalAspectRatio < 0.9) {
+                            img.classList.add('carousel__item--portrait');
+                          } else {
+                            img.classList.add('carousel__item--square');
+                          }
                         }
                       }}
                     />
@@ -407,10 +533,10 @@ export const Player = () => {
       
       if (template === "1up") {
         idx += 1;
-      } else if (template === "2next" || template === "2up") {
-        idx += template === "2up" ? 1 : 2;
-      } else if (template === "4next" || template === "4up") {
-        idx += template === "4up" ? 1 : 4;
+      } else if (template === "2next" || template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right") {
+        idx += (template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right") ? 1 : 2;
+      } else if (template === "4next" || template === "4up" || template === "4up-warhol") {
+        idx += (template === "4up" || template === "4up-warhol") ? 1 : 4;
       }
       slideIdx++;
     }

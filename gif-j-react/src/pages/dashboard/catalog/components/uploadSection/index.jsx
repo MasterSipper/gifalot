@@ -9,6 +9,7 @@ import { AddLinkModal } from "../addLinkModal";
 import { Loader } from "../../../../../components";
 import { Container } from "../container";
 import { CardContainer } from "../cardContainer";
+import { TransitionContainer } from "../transitionContainer";
 import { FoldersSelector } from "../../../../../store/selectors";
 import {
   removeImage,
@@ -19,7 +20,7 @@ import { collections, file } from "../../../../../static/api";
 
 import "./style.css";
 
-export const UploadSection = () => {
+export const UploadSection = ({ showTransitions, onToggleTransitions }) => {
   const dispatch = useDispatch();
 
   const { folderImages, folderItem, imageLoading } =
@@ -62,13 +63,15 @@ export const UploadSection = () => {
     [gifs, dispatch, sendRanks]
   );
 
-  const renderCard = () =>
-    gifs?.map((card, index) => {
-      if (imageLoading) {
-        return <Loader key={index} />;
-      }
+  const renderCard = () => {
+    if (imageLoading) {
+      return <Loader key="loading" />;
+    }
 
-      return (
+    const items = [];
+    gifs?.forEach((card, index) => {
+      // Add the item
+      items.push(
         <CardContainer
           key={card.id}
           item={card}
@@ -77,7 +80,37 @@ export const UploadSection = () => {
           index={index}
         />
       );
+
+      // Add transition container or spacer between items
+      if (folderItem?.view === "list") {
+        const nextItem = gifs[index + 1];
+        if (nextItem) {
+          if (showTransitions) {
+            // Show transition container
+            items.push(
+              <TransitionContainer
+                key={`transition-${card.id}`}
+                item={card}
+                nextItem={nextItem}
+              />
+            );
+          } else {
+            // Show spacer that can be double-clicked to toggle transitions
+            items.push(
+              <div
+                key={`transition-spacer-${card.id}`}
+                className="transition-spacer"
+                onDoubleClick={() => onToggleTransitions(true)}
+                title="Double-click to show transitions"
+              />
+            );
+          }
+        }
+      }
     });
+
+    return items;
+  };
 
   return (
     <div className={"upload_wrapper"}>

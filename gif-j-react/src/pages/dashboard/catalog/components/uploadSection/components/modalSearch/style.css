@@ -1,19 +1,50 @@
 .search__modal {
-    width: 75% !important;
-    height: 75% !important;
-
+    width: 90vw !important;
+    max-width: 90vw !important;
+    height: 90vh !important;
+    max-height: 90vh !important;
 }
 
 .search__modal .ant-modal-content {
     height: 100% !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.search__modal .ant-modal-header {
+    flex-shrink: 0;
 }
 
 .search__modal .ant-modal-body {
-    height: 87%;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .search__modal .ant-modal-body::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+}
+
+.search__modal .ant-modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.search__modal .ant-modal-body::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.search__modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.search__modal .ant-modal-footer {
+    flex-shrink: 0;
 }
 
 .search__modal__form {
@@ -31,15 +62,73 @@
     flex: 8;
 }
 
+.form__filters__section {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.form__filters__section .ant-form-item {
+    margin-bottom: 0;
+}
+
+.form__filters__section .ant-form-item-label {
+    padding-bottom: 8px;
+}
+
+.form__filters__section .ant-space {
+    width: 100%;
+}
+
+.giphy__results__container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    margin-top: 16px;
+    padding: 0;
+}
+
+.giphy__results__container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.giphy__results__container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.giphy__results__container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.giphy__results__container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 
 @media( max-width: 1440px){
-    .search__modal .ant-modal-body {
-        height: 85%;
+    .search__modal {
+        width: 90vw !important;
+        height: 90vh !important;
     }
 }
 
 @media( max-width: 768px){
-    .search__modal .ant-modal-body {
-        height: 77%;
+    .search__modal {
+        width: 95vw !important;
+        height: 95vh !important;
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+    }
+    
+    .form__filters__section .ant-space {
+        flex-direction: column;
+    }
+    
+    .form__filters__section .ant-form-item {
+        width: 100% !important;
     }
 }

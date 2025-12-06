@@ -6,7 +6,7 @@ import {
 } from "@ant-design/icons";
 import { InputNumber, Select } from "antd";
 import trans from "../../../assets/icons/transition.png";
-import { SelectsOptions, templateSelectOptions } from "../../../../../static/selectsOptions";
+import { templateSelectOptions, filterSelectOptions } from "../../../../../static/selectsOptions";
 import { useDispatch, useSelector } from "react-redux";
 import { FoldersSelector, UserInfo } from "../../../../../store/selectors";
 import { setImages, getFoldersImages } from "../../../../../store/slices/foldersSlice";
@@ -24,7 +24,7 @@ import "./style.css";
 export const ListCardSettings = ({ onRemove, card }) => {
   const dispatch = useDispatch();
 
-  const { timePerSlide, transitionType, id, isFavorite, rotation, template } = card;
+  const { timePerSlide, transitionType, id, isFavorite, rotation, template, filter } = card;
 
   const { folderItem, folderImages } = useSelector(FoldersSelector);
   const { userInfo } = useSelector(UserInfo);
@@ -33,15 +33,27 @@ export const ListCardSettings = ({ onRemove, card }) => {
   const initialSeconds = timePerSlide
     ? timePerSlide / 1000
     : folderItem.timePerSlide / 1000;
-  const initialAnimation = transitionType
-    ? transitionType
-    : folderItem.transitionType;
   const initialTemplate = template || folderItem?.template || "1up";
+  const initialFilter = filter || "";
 
   const [addToFav, setAddToFav] = React.useState(isFavorite);
   const [time, setTime] = React.useState(initialSeconds);
-  const [animation, setAnimation] = React.useState(initialAnimation);
   const [templateValue, setTemplateValue] = React.useState(initialTemplate);
+  const [filterValue, setFilterValue] = React.useState(initialFilter);
+
+  // Sync state when card prop changes (e.g., after reload from backend)
+  React.useEffect(() => {
+    const newInitialTemplate = template || folderItem?.template || "1up";
+    const newInitialFilter = filter || "";
+    setTemplateValue(newInitialTemplate);
+    setFilterValue(newInitialFilter);
+    setAddToFav(isFavorite);
+    if (timePerSlide) {
+      setTime(timePerSlide / 1000);
+    } else if (folderItem?.timePerSlide) {
+      setTime(folderItem.timePerSlide / 1000);
+    }
+  }, [card, template, filter, isFavorite, timePerSlide, folderItem?.template, folderItem?.timePerSlide]);
 
   const handleInputChange = async (value) => {
     setTime((prevState) => value);
@@ -61,24 +73,6 @@ export const ListCardSettings = ({ onRemove, card }) => {
     dispatch(setImages(newArr));
   };
 
-  const handleAnimation = async (value) => {
-    setAnimation((prevState) => value);
-    await axiosInstance.patch(`${file}/${id}`, {
-      transitionType: value,
-    });
-    const newArr = folderImages.map((item) => {
-      if (item.id === id) {
-        return {
-          ...item,
-          transitionType: value,
-        };
-      } else {
-        return item;
-      }
-    });
-    dispatch(setImages(newArr));
-  };
-
   const handleTemplate = async (value) => {
     setTemplateValue((prevState) => value);
     await axiosInstance.patch(`${file}/${id}`, {
@@ -89,6 +83,24 @@ export const ListCardSettings = ({ onRemove, card }) => {
         return {
           ...item,
           template: value,
+        };
+      } else {
+        return item;
+      }
+    });
+    dispatch(setImages(newArr));
+  };
+
+  const handleFilter = async (value) => {
+    setFilterValue((prevState) => value);
+    await axiosInstance.patch(`${file}/${id}`, {
+      filter: value || null,
+    });
+    const newArr = folderImages.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          filter: value || null,
         };
       } else {
         return item;
@@ -237,21 +249,6 @@ export const ListCardSettings = ({ onRemove, card }) => {
       <div className={"list_card_settings_box"}>
         <div className={"list_card_settings_field"}>
           <div className={"list_card_settings_label"}>
-            <img src={trans} alt={"transition"} />
-            <p>Transition:</p>
-          </div>
-          <Select
-            value={animation}
-            style={{ width: 126 }}
-            onChange={handleAnimation}
-            options={SelectsOptions}
-          />
-        </div>
-      </div>
-
-      <div className={"list_card_settings_box"}>
-        <div className={"list_card_settings_field"}>
-          <div className={"list_card_settings_label"}>
             <img src={trans} alt={"template"} />
             <p>Template:</p>
           </div>
@@ -260,6 +257,21 @@ export const ListCardSettings = ({ onRemove, card }) => {
             style={{ width: 126 }}
             onChange={handleTemplate}
             options={templateSelectOptions}
+          />
+        </div>
+      </div>
+
+      <div className={"list_card_settings_box"}>
+        <div className={"list_card_settings_field"}>
+          <div className={"list_card_settings_label"}>
+            <img src={trans} alt={"filter"} />
+            <p>Filter:</p>
+          </div>
+          <Select
+            value={filterValue}
+            style={{ width: 126 }}
+            onChange={handleFilter}
+            options={filterSelectOptions}
           />
         </div>
       </div>

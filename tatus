@@ -1,0 +1,1 @@
+[33me58d745[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Prevent login API calls when auth is disabled - Skip login API call in login form when DISABLE_AUTH is true - Return mock user data immediately in login action when auth is disabled - This prevents localhost API calls in production

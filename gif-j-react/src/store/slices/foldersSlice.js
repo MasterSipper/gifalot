@@ -107,6 +107,7 @@ export const folderSlice = createSlice({
     builder.addCase(getFolders.rejected, (state, { payload }) => {
       state.loading = false;
 
+
       const errorMessage = payload?.error?.response?.data?.message || 
                           payload?.error?.message || 
                           "Failed to load compilations";
@@ -133,6 +134,7 @@ export const folderSlice = createSlice({
     });
     builder.addCase(getFoldersImages.rejected, (state, { payload }) => {
       state.imageLoading = false;
+      
       
       const errorMessage = payload?.error?.response?.data?.message || 
                           payload?.error?.message || 

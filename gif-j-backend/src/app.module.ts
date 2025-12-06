@@ -13,8 +13,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CollectionModule } from './modules/collection/collection.module';
 import { FavoriteModule } from './modules/favorite/favorite.module';
 import { FileModule } from './modules/file/file.module';
+import { AppController } from './app.controller';
 
 @Module({
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,

@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Col, Form, Input, Modal, notification } from "antd";
+import { Button, Col, Form, Input, Modal, notification, Select, Space } from "antd";
 import { SearchModalFooter, Gif } from "./components";
 import { UserOutlined } from "@ant-design/icons";
 import { modalSelector } from "../../../../../store/selector/modalSelector";
@@ -27,22 +27,58 @@ export const ModalSearch = () => {
   const [offset, setOffset] = React.useState(0);
   const [searchValue, setSearchValue] = React.useState("");
   const [addGifs, setAddGifs] = React.useState([]);
+  const [isAdding, setIsAdding] = React.useState(false);
+  const [selectedRatings, setSelectedRatings] = React.useState(['g', 'pg', 'pg-13', 'r']); // All ratings selected by default
+  const [selectedOrientation, setSelectedOrientation] = React.useState('all'); // 'all', 'landscape', 'portrait', 'square'
 
-  const fetchGifs = (page, search) => {
+  const fetchGifs = (page, search, ratings = selectedRatings, orientation = selectedOrientation) => {
     const condition = search === undefined ? searchValue : search;
+    
+    // Build params object - axios will handle array parameters correctly
+    const params = {
+      q: condition,
+      offset: page,
+      limit: 50,
+    };
+    
+    // Add ratings if specified and not all are selected (to avoid unnecessary filtering)
+    if (ratings && ratings.length > 0 && ratings.length < 4) {
+      params.ratings = ratings;
+    }
 
     axiosInstance
-      .get(`${file}/giphy-search?q=${condition}&offset=${page}&limit=${50}`)
+      .get(`${file}/giphy-search`, { params })
       .then((res) => {
+        // Filter by orientation if specified (client-side filtering based on dimensions)
+        let filteredData = res.data.data;
+        if (orientation && orientation !== 'all' && res.data.data.length > 0) {
+          filteredData = res.data.data.filter((gif) => {
+            // Check if gif has dimensions in the response
+            // The backend should include width/height if available from Giphy API
+            if (gif.width && gif.height) {
+              const aspectRatio = gif.width / gif.height;
+              if (orientation === 'landscape') {
+                return aspectRatio > 1.1; // Width significantly greater than height
+              } else if (orientation === 'portrait') {
+                return aspectRatio < 0.9; // Height significantly greater than width
+              } else if (orientation === 'square') {
+                return aspectRatio >= 0.9 && aspectRatio <= 1.1; // Roughly square
+              }
+            }
+            // If no dimensions, include it (can't filter)
+            return true;
+          });
+        }
+        
         // setTotal(res.data.pagination.total_count);
-        if (res.data.data.length === 0) {
+        if (filteredData.length === 0) {
           notification.info({
             message: `we couldn't find something on you request, try again`,
           });
           setGifs([]);
         } else {
           setOffset(res.data.pagination.offset);
-          setGifs((prevState) => res.data.data);
+          setGifs((prevState) => filteredData);
         }
       })
       .catch((e) => {
@@ -55,7 +91,25 @@ export const ModalSearch = () => {
   const onFinish = async (values) => {
     const { search } = values;
     setSearchValue(search);
-    await fetchGifs(0, search);
+    await fetchGifs(0, search, selectedRatings, selectedOrientation);
+  };
+
+  const handleRatingChange = (value) => {
+    // value is now a single string or array from Select
+    const ratings = Array.isArray(value) ? value : value ? [value] : ['g', 'pg', 'pg-13', 'r'];
+    setSelectedRatings(ratings);
+    // Re-fetch with new ratings if we have a search value
+    if (searchValue) {
+      fetchGifs(offset, searchValue, ratings, selectedOrientation);
+    }
+  };
+
+  const handleOrientationChange = (value) => {
+    setSelectedOrientation(value);
+    // Re-fetch with new orientation if we have a search value
+    if (searchValue) {
+      fetchGifs(offset, searchValue, selectedRatings, value);
+    }
   };
 
   const handleOk = async () => {
@@ -76,6 +130,13 @@ export const ModalSearch = () => {
       return;
     }
 
+    if (isAdding) {
+      // Prevent multiple simultaneous requests
+      return;
+    }
+
+    setIsAdding(true);
+    
     try {
       // Ensure all IDs are strings (Giphy API requires string IDs)
       const idsToSend = addGifs.map((id) => String(id));
@@ -85,8 +146,17 @@ export const ModalSearch = () => {
         idsToSend,
         idsType: addGifs.map(id => typeof id),
       });
+      
+      notification.info({
+        message: `Adding ${addGifs.length} GIF(s)...`,
+        description: 'This may take a moment, especially for multiple large GIFs.',
+        duration: 3,
+      });
+      
       const res = await axiosInstance.post(`${file}/${folderItem.id}/giphy`, {
         ids: idsToSend,
+      }, {
+        timeout: 120000, // 120 seconds timeout for Giphy requests (multiple large GIFs can take time)
       });
 
       console.log('API response:', res.data);
@@ -110,11 +180,29 @@ export const ModalSearch = () => {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
+        code: error.code,
       });
+      
+      let errorMessage = "Failed to add GIFs to playlist";
+      let errorDescription = "";
+      
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = "Request timed out";
+        errorDescription = "The request took too long. This can happen with large GIFs. Please try adding fewer GIFs at once or try again.";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        errorDescription = error.response.data.error || error.response.statusText;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       notification.error({
-        message: error.response?.data?.message || error.message || "Failed to add GIFs to playlist",
-        description: error.response?.data?.error || error.response?.statusText,
+        message: errorMessage,
+        description: errorDescription,
+        duration: 5,
       });
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -189,6 +277,7 @@ export const ModalSearch = () => {
             onOk={handleOk}
             count={addGifs.length}
             onChangeData={fetchGifs}
+            loading={isAdding}
           />
         }
       >
@@ -215,11 +304,47 @@ export const ModalSearch = () => {
               Search
             </Button>
           </div>
+          
+          <div className={"form__filters__section"}>
+            <Space direction="horizontal" size="middle" style={{ width: '100%', flexWrap: 'wrap' }}>
+              <Form.Item label="Content Rating" style={{ marginBottom: 0, minWidth: 200 }}>
+                <Select
+                  mode="multiple"
+                  value={selectedRatings}
+                  onChange={handleRatingChange}
+                  placeholder="Select ratings"
+                  style={{ width: '100%' }}
+                  options={[
+                    { label: 'G (General)', value: 'g' },
+                    { label: 'PG (Parental Guidance)', value: 'pg' },
+                    { label: 'PG-13 (Parents Strongly Cautioned)', value: 'pg-13' },
+                    { label: 'R (Restricted)', value: 'r' },
+                  ]}
+                />
+              </Form.Item>
+              
+              <Form.Item label="Orientation" style={{ marginBottom: 0, minWidth: 150 }}>
+                <Select
+                  value={selectedOrientation}
+                  onChange={handleOrientationChange}
+                  style={{ width: '100%' }}
+                  options={[
+                    { label: 'All', value: 'all' },
+                    { label: 'Landscape', value: 'landscape' },
+                    { label: 'Portrait', value: 'portrait' },
+                    { label: 'Square', value: 'square' },
+                  ]}
+                />
+              </Form.Item>
+            </Space>
+          </div>
         </Form>
 
-        <GridContainer height={"55vh"} id={"giphy"}>
-          {renderGif()}
-        </GridContainer>
+        <div className={"giphy__results__container"} id={"giphy"}>
+          <GridContainer>
+            {renderGif()}
+          </GridContainer>
+        </div>
       </Modal>
     </>
   );

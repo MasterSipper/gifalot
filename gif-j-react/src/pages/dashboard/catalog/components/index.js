@@ -10,3 +10,4 @@ export * from "./settingsItemModal";
 export * from "./listCardSettings";
 export * from "./viewModal";
 export * from "./accessModal";
+export * from "./transitionContainer";

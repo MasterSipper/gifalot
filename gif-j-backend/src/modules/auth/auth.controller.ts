@@ -18,10 +18,18 @@ export class AuthController {
     return this.authService.register(body);
   }
 
-  @Recaptcha({ action: 'login' })
+  // @Recaptcha({ action: 'login' }) // Temporarily disabled for debugging
   @Post('login')
   public async login(@Body() body: AuthLoginDto) {
-    return this.authService.login(body);
+    console.log('Login endpoint hit!', { email: body.email });
+    try {
+      const result = await this.authService.login(body);
+      console.log('Login service returned:', result ? 'success' : 'null');
+      return result;
+    } catch (error) {
+      console.error('Login error in controller:', error);
+      throw error;
+    }
   }
 
   @UseGuards(AuthGuard('jwt-refresh'))

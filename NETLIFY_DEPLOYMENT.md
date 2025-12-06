@@ -83,3 +83,4 @@ Then visit `http://localhost:3000` and check the console for errors.
 3. Ensure your backend CORS settings allow requests from `https://gifalot.netlify.app`
 4. Redeploy the frontend
 
+

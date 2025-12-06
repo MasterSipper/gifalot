@@ -12,8 +12,9 @@ export const SearchModalFooter = ({
   total,
   onChangeData,
   page,
+  loading = false,
 }) => {
-  const disable = count === 0 || count > 10;
+  const disable = count === 0 || count > 10 || loading;
   const giphyContainer = document.getElementById("giphy");
 
   return (
@@ -36,9 +37,9 @@ export const SearchModalFooter = ({
       )}
 
       <div className={"search_modal__footer__buttons"}>
-        <Button onClick={onCancel}>Cancel</Button>
-        <Button type="primary" disabled={disable} onClick={onOk}>
-          Add {count} to playlist
+        <Button onClick={onCancel} disabled={loading}>Cancel</Button>
+        <Button type="primary" disabled={disable} loading={loading} onClick={onOk}>
+          {loading ? `Adding ${count} GIF(s)...` : `Add ${count} to playlist`}
         </Button>
       </div>
     </div>

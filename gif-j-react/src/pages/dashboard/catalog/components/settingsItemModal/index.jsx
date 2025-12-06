@@ -2,7 +2,7 @@ import React from "react";
 import timer from "../../../assets/icons/timer.png";
 import { InputNumber, Modal, Select } from "antd";
 import trans from "../../../assets/icons/transition.png";
-import { SelectsOptions } from "../../../../../static/selectsOptions";
+import { SelectsOptions, filterSelectOptions } from "../../../../../static/selectsOptions";
 import { useDispatch, useSelector } from "react-redux";
 import { modalSelector } from "../../../store/selector/modalSelector";
 import { FoldersSelector } from "../../../../../store/selectors";
@@ -26,14 +26,17 @@ export const SettingsItemModal = () => {
   const initialAnimation = folderImage?.transitionType
     ? folderImage.transitionType
     : folderItem.transitionType;
+  const initialFilter = folderImage?.filter || "";
 
   const [seconds, setSeconds] = React.useState(initialSeconds);
   const [animation, setAnimation] = React.useState(initialAnimation);
+  const [filter, setFilter] = React.useState(initialFilter);
 
   React.useEffect(() => {
     setSeconds(initialSeconds);
     setAnimation(initialAnimation);
-  }, [folderImage, initialSeconds, initialAnimation]);
+    setFilter(initialFilter);
+  }, [folderImage, initialSeconds, initialAnimation, initialFilter]);
 
   const handleInputChange = (value) => {
     setSeconds((prevState) => value);
@@ -43,6 +46,10 @@ export const SettingsItemModal = () => {
     setAnimation((prevState) => value);
   };
 
+  const handleFilter = (value) => {
+    setFilter((prevState) => value);
+  };
+
   const handleViewModalOpen = (e) => {
     e.stopPropagation();
     dispatch(settingsItemClosed());
@@ -50,10 +57,11 @@ export const SettingsItemModal = () => {
   };
 
   const handleCancel = async () => {
-    if (seconds !== initialSeconds || animation !== initialAnimation) {
+    if (seconds !== initialSeconds || animation !== initialAnimation || filter !== initialFilter) {
       await axiosInstance.patch(`${file}/${folderImage.id}`, {
         timePerSlide: seconds * 1000,
         transitionType: animation,
+        filter: filter || null,
       });
       const newArr = folderImages.map((item) => {
         if (item.id === folderImage.id) {
@@ -61,6 +69,7 @@ export const SettingsItemModal = () => {
             ...item,
             timePerSlide: seconds * 1000,
             transitionType: animation,
+            filter: filter || null,
           };
         } else {
           return item;
@@ -71,6 +80,7 @@ export const SettingsItemModal = () => {
 
     setSeconds(0);
     setAnimation("");
+    setFilter("");
     dispatch(settingsItemClosed());
   };
 
@@ -106,6 +116,17 @@ export const SettingsItemModal = () => {
           className={"box__select"}
           onChange={handleAnimation}
           options={SelectsOptions}
+        />
+      </div>
+
+      <div className={"setting_modal__box"}>
+        <img src={trans} alt={"filter"} />
+        <p>Filter:</p>
+        <Select
+          value={filter}
+          className={"box__select"}
+          onChange={handleFilter}
+          options={filterSelectOptions}
         />
       </div>
 

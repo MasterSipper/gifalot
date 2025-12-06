@@ -168,3 +168,4 @@ Do you want to manage the server yourself?
 
 *Note: Contabo Object Storage is already set up, so storage cost is already covered.*
 
+

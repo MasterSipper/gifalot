@@ -18,57 +18,22 @@ export const LoginForm = () => {
   const { token, handleVerify } = useCaptcha();
 
   const onFinish = async (values) => {
-    // Check if auth is disabled - if so, just navigate to dashboard
-    const DISABLE_AUTH = true; // Match the flag in userSlice.js
-    
-    if (DISABLE_AUTH) {
-      // Auth is disabled, skip login and navigate directly
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      if (redirectUrl) {
-        sessionStorage.removeItem('redirectAfterLogin');
-        const playerMatch = redirectUrl.match(/\/(\d+)\/(\d+)\/carousel/);
-        if (playerMatch) {
-          const folderId = playerMatch[2];
-          navigate(`/${routes.dashboard}/${folderId}`);
-        } else {
-          const privatePlayerMatch = redirectUrl.match(/\/player\/(\d+)/);
-          if (privatePlayerMatch) {
-            const folderId = privatePlayerMatch[1];
-            navigate(`/${routes.dashboard}/${folderId}`);
-          } else {
-            navigate(redirectUrl);
-          }
-        }
-      } else {
-        navigate(`/${routes.dashboard}`);
-      }
-      return;
-    }
-    
-    console.log("Login form submitted with values:", values);
     setLoading(true);
     try {
       // Ensure captcha token is set before submitting
       let captchaToken = token;
       if (!captchaToken && executeRecaptcha) {
         try {
-          console.log("Getting reCAPTCHA token...");
           captchaToken = await executeRecaptcha("login");
-          console.log("reCAPTCHA token obtained");
         } catch (error) {
           console.error("Failed to get reCAPTCHA token:", error);
         }
-      } else {
-        console.log("Using existing reCAPTCHA token");
       }
       
-      console.log("Dispatching login action...");
       const result = await dispatch(login({ ...values, token: captchaToken || "" }));
-      console.log("Login result:", result);
       
       // Only navigate if login was successful
       if (login.fulfilled.match(result)) {
-        console.log("Login successful, checking for redirect");
         // Check if we have a redirect URL stored
         const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
         if (redirectUrl) {
@@ -91,10 +56,6 @@ export const LoginForm = () => {
           }
         } else {
           navigate(`/${routes.dashboard}`);
-        }
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("Login failed or rejected");
         }
       }
     } catch (error) {
@@ -175,7 +136,7 @@ export const LoginForm = () => {
         </Button>
       </Form.Item>
       <div className={"form__footer"}>
-        <p className={"footer__p"}>Don’t you have an account?</p>
+        <p className={"footer__p"}>Don't you have an account?</p>
         <p className={"footer__create"} onClick={toRegistration}>
           Create an account
         </p>

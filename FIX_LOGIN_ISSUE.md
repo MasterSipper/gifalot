@@ -123,3 +123,4 @@ If React is using port 3000, you need to run backend on a different port:
 - [ ] Database services (MySQL, Redis) are running
 - [ ] No port conflicts between frontend and backend
 
+

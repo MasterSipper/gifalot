@@ -26,4 +26,14 @@ export class FileUpdateDto {
   @IsString()
   @Length(1, 10)
   public rotation?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 50)
+  public template?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 50)
+  public filter?: string;
 }

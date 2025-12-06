@@ -96,3 +96,4 @@ Make sure you're not committing:
    S3_BUCKET_NAME=gifalot-production
    ```
 
+

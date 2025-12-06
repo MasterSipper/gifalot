@@ -51,7 +51,15 @@ export const AnimationHandler = ({
   // }, []);
 
   // Always apply animation-handler class, and active class only when isActive is true
-  const className = `animation-handler ${isActive ? `${type || ''} active` : ''}`.trim();
+  // Apply transition type class only when active to ensure animation triggers
+  const className = `animation-handler ${isActive && type ? `${type} active` : ''}`.trim();
+  
+  // Debug logging (remove in production)
+  React.useEffect(() => {
+    if (isActive && type) {
+      console.log('AnimationHandler active:', { type, isActive, className, transitionDuration });
+    }
+  }, [isActive, type, className, transitionDuration]);
   
   return (
     <div
@@ -59,6 +67,7 @@ export const AnimationHandler = ({
       ref={imageRef}
       style={{
         animationDuration: `${transitionDuration}ms`,
+        '--transition-duration': `${transitionDuration}ms`,
         transform: `rotate(${rotation || 0}deg)`,
       }}
     >

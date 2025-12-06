@@ -41,60 +41,55 @@ export const TokenService = {
 
   getAccessToken: () => {
     try {
-      const remember = TokenService.getRemember();
-      if (remember) {
-        const userStr = LocalStorage.get(userKey);
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          return user?.accessToken;
+      // Check both storages directly (avoid circular dependency with getRemember)
+      let userStr = sessionStorage.getItem(userKey) || LocalStorage.get(userKey);
+      
+      if (!userStr) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log("getAccessToken - No data found in storage");
         }
-      } else {
-        const userStr = sessionStorage.getItem(userKey);
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          return user?.accessToken;
-        }
+        return null;
       }
-      // Fallback: try both if remember check failed
-      try {
-        const localUser = LocalStorage.get(userKey);
-        if (localUser) {
-          const user = JSON.parse(localUser);
-          if (user?.accessToken) return user.accessToken;
-        }
-      } catch (e) {}
-      try {
-        const sessionUser = sessionStorage.getItem(userKey);
-        if (sessionUser) {
-          const user = JSON.parse(sessionUser);
-          if (user?.accessToken) return user.accessToken;
-        }
-      } catch (e) {}
+      
+      const user = JSON.parse(userStr);
+      const token = user?.accessToken || null;
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log("getAccessToken - Found token:", {
+          hasToken: !!token,
+          storage: sessionStorage.getItem(userKey) ? 'sessionStorage' : 'localStorage'
+        });
+      }
+      
+      return token;
     } catch (error) {
       console.error("Error getting access token:", error);
+      return null;
     }
-    return null;
   },
 
   getRemember: () => {
     try {
+      // Check both storages directly
       const localUser = LocalStorage.get(userKey);
+      const sessionUser = sessionStorage.getItem(userKey);
+      
+      // Prefer localStorage if it exists (remember=true uses localStorage)
       if (localUser) {
         const user = JSON.parse(localUser);
-        return user?.remember;
+        return user?.remember || false;
       }
-    } catch (e) {
-      // LocalStorage might be empty
-    }
-    // If not in localStorage, check sessionStorage
-    try {
-      const sessionUser = sessionStorage.getItem(userKey);
+      
+      // Otherwise check sessionStorage
       if (sessionUser) {
         const user = JSON.parse(sessionUser);
         return user?.remember || false;
       }
     } catch (e) {
-      // sessionStorage might be empty
+      // Storage might be empty or corrupted
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error getting remember flag:", e);
+      }
     }
     return false;
   },

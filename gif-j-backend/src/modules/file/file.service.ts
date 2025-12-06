@@ -2,6 +2,7 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -366,6 +367,7 @@ export class FileService {
             ext: 'gif',
             mimeType: 'image/gif',
             url: originalImage.url || '',
+            giphyId: gif.id, // Store Giphy ID for deduplication
             width: originalImage.width ? parseInt(String(originalImage.width), 10) : null,
             height: originalImage.height ? parseInt(String(originalImage.height), 10) : null,
           };
@@ -643,21 +645,52 @@ export class FileService {
   }
 
   public async giphySearch(query: FileGiphySearchDto) {
+    // Extract ratings from query and build API params
+    const { ratings, ...apiParams } = query;
+    
+    // If ratings are specified, we need to filter results
+    // First, fetch with rating="r" to get all possible results
+    // Then filter by the rating field in each GIF object
+    const apiQueryParams: any = {
+      api_key: process.env.GIPHY_API_KEY,
+      q: apiParams.q,
+      offset: apiParams.offset,
+      limit: apiParams.limit,
+      rating: 'r', // Fetch all ratings, we'll filter on the backend
+    };
+
     return axios
       .get('https://api.giphy.com/v1/gifs/search', {
-        params: {
-          api_key: process.env.GIPHY_API_KEY,
-          ...query,
-        },
+        params: apiQueryParams,
       })
-      .then((r) => ({
-        data: r.data.data.map((gif) => ({
-          id: gif.id,
-          title: gif.title,
-          url: gif.images.original.url,
-        })),
-        pagination: r.data.pagination,
-      }));
+      .then((r) => {
+        let filteredData = r.data.data;
+        
+        // Filter by ratings if specified
+        if (ratings && ratings.length > 0) {
+          // Normalize rating values (Giphy uses lowercase)
+          const allowedRatings = ratings.map(r => r.toLowerCase());
+          filteredData = r.data.data.filter((gif) => {
+            const gifRating = (gif.rating || '').toLowerCase();
+            return allowedRatings.includes(gifRating);
+          });
+        }
+
+        return {
+          data: filteredData.map((gif) => ({
+            id: gif.id,
+            title: gif.title,
+            url: gif.images.original.url,
+            rating: gif.rating || 'unrated', // Include rating for debugging
+            width: gif.images.original.width ? parseInt(gif.images.original.width, 10) : null,
+            height: gif.images.original.height ? parseInt(gif.images.original.height, 10) : null,
+          })),
+          pagination: {
+            ...r.data.pagination,
+            count: filteredData.length, // Update count to reflect filtered results
+          },
+        };
+      });
   }
 
   public async checkLinks(body: FileCheckLinksDto) {
@@ -772,7 +805,7 @@ export class FileService {
   private async batchCreate(
     userId: number,
     collection: Collection,
-    filesData: { name: string; ext: string; mimeType: string; url: string; width?: number | null; height?: number | null }[],
+    filesData: { name: string; ext: string; mimeType: string; url: string; width?: number | null; height?: number | null; giphyId?: string | null }[],
   ) {
     const files = this.fileRepository.create(
       filesData.map((file) => ({
@@ -780,6 +813,7 @@ export class FileService {
         ext: file.ext,
         mimeType: file.mimeType,
         originalUrl: file.url, // Store original URL for fallback
+        giphyId: file.giphyId ?? null, // Store Giphy ID for deduplication
         width: file.width ?? null,
         height: file.height ?? null,
         collection: { id: collection.id },
@@ -797,29 +831,75 @@ export class FileService {
     return Promise.all(
       files.map(async (file, index) => {
         try {
-          const buffer: Buffer = await axios
-            .get(filesData[index].url, { responseType: 'arraybuffer' })
-            .then((r) => r.data);
-
-          const key = this.buildKey(file.id, userId, collection.id, file.ext);
+          const fileData = filesData[index];
+          const giphyId = fileData.giphyId;
           
           // For local development without S3, return the original URL
           if (process.env.STAGE === 'local' && (!process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID === 'your-aws-access-key-id')) {
             console.warn('S3 not configured, using original URL for local development');
-            return file.toAPI(filesData[index].url);
+            return file.toAPI(fileData.url);
           }
 
-          const [url] = await Promise.all([
-            this.getFileUrl(key),
-            this.s3.send(
-              new PutObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME,
-                Key: key,
-                Body: buffer,
-                ContentType: file.mimeType,
-              }),
-            ),
-          ]);
+          // For Giphy GIFs, use shared storage path and check if already exists
+          let key: string;
+          let url: string | undefined;
+          let needsUpload = true;
+
+          if (giphyId) {
+            // Use shared path for Giphy GIFs: giphy/{giphyId}.gif
+            key = `giphy/${giphyId}.${file.ext}`;
+            
+            // Check if GIF already exists in S3
+            try {
+              await this.s3.send(
+                new HeadObjectCommand({
+                  Bucket: process.env.S3_BUCKET_NAME,
+                  Key: key,
+                }),
+              );
+              // GIF exists, get its URL
+              console.log(`Giphy GIF ${giphyId} already exists in S3, reusing`);
+              url = await this.getFileUrl(key);
+              needsUpload = false;
+            } catch (headError: any) {
+              // If error is 404 (Not Found), the object doesn't exist, we need to upload
+              if (headError.name !== 'NotFound' && headError.$metadata?.httpStatusCode !== 404) {
+                console.warn(`Error checking for existing Giphy GIF ${giphyId}:`, headError);
+                // Continue with upload attempt
+              }
+              // If it's a 404, needsUpload stays true and we'll upload below
+            }
+          } else {
+            // Regular files use the original path structure
+            key = this.buildKey(file.id, userId, collection.id, file.ext);
+          }
+
+          // Download and upload if needed
+          if (needsUpload) {
+            const buffer: Buffer = await axios
+              .get(fileData.url, { responseType: 'arraybuffer' })
+              .then((r) => r.data);
+
+            const [fileUrl] = await Promise.all([
+              this.getFileUrl(key),
+              this.s3.send(
+                new PutObjectCommand({
+                  Bucket: process.env.S3_BUCKET_NAME,
+                  Key: key,
+                  Body: buffer,
+                  ContentType: file.mimeType,
+                }),
+              ),
+            ]);
+            url = fileUrl;
+            console.log(`Uploaded ${giphyId ? `Giphy GIF ${giphyId}` : 'file'} to S3: ${key}`);
+          }
+
+          // Fallback to original URL if S3 URL is not available
+          if (!url) {
+            console.warn(`Could not get S3 URL for file ${file.id}, using original URL`);
+            url = fileData.url;
+          }
 
           return file.toAPI(url);
         } catch (error) {

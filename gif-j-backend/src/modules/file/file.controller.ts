@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -95,8 +96,28 @@ export class FileController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('giphy-search')
-  public async giphySearch(@Query() query: FileGiphySearchDto) {
-    return this.fileService.giphySearch(query);
+  public async giphySearch(@Query() query: any) {
+    // Handle ratings array parameter - can come as comma-separated string, array, or multiple query params
+    let ratings: string[] | undefined;
+    if (query.ratings) {
+      if (typeof query.ratings === 'string') {
+        // Could be comma-separated or single value
+        ratings = query.ratings.split(',').map((r: string) => r.trim()).filter((r: string) => r.length > 0);
+      } else if (Array.isArray(query.ratings)) {
+        // Already an array (axios might send as array)
+        ratings = query.ratings.map((r: string) => String(r).trim()).filter((r: string) => r.length > 0);
+      }
+    }
+    
+    // Validate and convert to DTO
+    const dto: FileGiphySearchDto = {
+      q: query.q,
+      offset: Number(query.offset),
+      limit: Number(query.limit),
+      ...(ratings && ratings.length > 0 ? { ratings } : {}),
+    };
+    
+    return this.fileService.giphySearch(dto);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -106,7 +127,18 @@ export class FileController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: FileUpdateDto,
   ) {
+    console.log('Update file request:', { userId, id, body });
     return this.fileService.updateFile(userId, id, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/duplicate')
+  public async duplicateFile(
+    @UserParam('id') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    console.log('Duplicate file request:', { userId, id });
+    return this.fileService.duplicateFile(userId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))

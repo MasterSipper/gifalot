@@ -7,4 +7,3 @@ export * from "./favourite";
 export * from "./mostFavorite";
 export * from "./player";
 export * from "./learnMore";
-export * from "./publicCarousel";

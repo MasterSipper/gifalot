@@ -81,3 +81,4 @@ You can test if credentials work by using AWS CLI or a tool like Postman to dire
 - **Missing CORS**: Browser uploads require CORS to be configured
 - **Invalid credentials**: Double-check Access Key ID and Secret Key
 
+

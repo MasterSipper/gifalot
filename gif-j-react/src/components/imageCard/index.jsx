@@ -67,6 +67,17 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
           controls
           muted
           playsInline
+          onLoadedMetadata={(e) => {
+            const video = e.target;
+            const aspectRatio = video.videoWidth / video.videoHeight;
+            if (aspectRatio > 1.1) {
+              video.classList.add('image_card__img--landscape');
+            } else if (aspectRatio < 0.9) {
+              video.classList.add('image_card__img--portrait');
+            } else {
+              video.classList.add('image_card__img--square');
+            }
+          }}
         />
       ) : (
         <img
@@ -78,6 +89,17 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
             transform: `rotate(${rotation}deg)`,
           }}
           onClick={maskOpen}
+          onLoad={(e) => {
+            const img = e.target;
+            const aspectRatio = img.naturalWidth / img.naturalHeight;
+            if (aspectRatio > 1.1) {
+              img.classList.add('image_card__img--landscape');
+            } else if (aspectRatio < 0.9) {
+              img.classList.add('image_card__img--portrait');
+            } else {
+              img.classList.add('image_card__img--square');
+            }
+          }}
         />
       )}
       {isHovered && (

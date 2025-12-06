@@ -1,0 +1,36 @@
+.transition_container {
+    padding: 12px 16px;
+    margin: 8px 0;
+    background: #f5f5f5;
+    border-left: 3px solid #1890ff;
+    border-radius: 4px;
+}
+
+.transition_container__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.transition_container__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+}
+
+.transition_container__label img {
+    width: 16px;
+    height: 16px;
+}
+
+.transition_container__label p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.transition_container__select {
+    flex: 1;
+    min-width: 150px;
+}

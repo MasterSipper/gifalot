@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length, Max, Min } from 'class-validator';
+import { IsArray, IsIn, IsNotEmpty, IsOptional, IsString, Length, Max, Min } from 'class-validator';
 
 export class FileGiphySearchDto {
   @IsNotEmpty()
@@ -15,4 +15,10 @@ export class FileGiphySearchDto {
   @Min(0)
   @Max(100)
   public limit: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsIn(['g', 'pg', 'pg-13', 'r'], { each: true })
+  public ratings?: string[];
 }

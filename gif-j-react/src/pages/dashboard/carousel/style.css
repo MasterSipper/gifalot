@@ -135,15 +135,14 @@ body:has(.carousel__wrapper) {
 
 /* 2up wrapper: each slot is 50% width, 100% height (8:9 aspect ratio for 16:9 screen) */
 /* SLOT = 50% width, 100% height */
-/* Only apply 50% width to direct children of the slide, not nested ones */
-.carousel__slide--2up > .carousel__item-wrapper--2up,
-.carousel__item-wrapper--2up:not(.animation-handler .carousel__item-wrapper--2up):not(.carousel__item-wrapper .carousel__item-wrapper--2up) {
+/* Base styles for 2up wrappers - slot-specific rules below will override justify-content */
+.carousel__slide--2up > .carousel__item-wrapper--2up {
     flex: 0 0 50% !important;
     flex-basis: 50% !important;
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
     display: flex !important;
-    justify-content: center !important; /* Center content horizontally */
+    justify-content: center !important; /* Default center - OVERRIDDEN by slot-specific rules below */
     align-items: stretch !important; /* Stretch items to fill height */
     width: 50% !important;
     max-width: 50% !important;
@@ -158,6 +157,100 @@ body:has(.carousel__wrapper) {
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* ============================================
+   2UP SLOT ALIGNMENT - CRITICAL RULES
+   Maximum specificity to override all other rules
+   ============================================ */
+
+/* CRITICAL: Left slot must align RIGHT (flex-end) to minimize gaps in middle */
+/* Using maximum specificity - this MUST override the base center rule */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left {
+    justify-content: flex-end !important; /* Align content to the right edge */
+    align-items: stretch !important;
+    /* Visual test: uncomment to verify CSS is loading */
+    /* border: 2px solid red !important; */
+}
+
+/* CRITICAL: Right slot must align LEFT (flex-start) to minimize gaps in middle */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right {
+    justify-content: flex-start !important; /* Align content to the left edge */
+    align-items: stretch !important;
+    /* Visual test: uncomment to verify CSS is loading */
+    /* border: 2px solid blue !important; */
+}
+
+/* Ensure animation handlers in 2up slots respect alignment */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler {
+    justify-content: flex-end !important; /* Force right alignment in left slot */
+}
+
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler {
+    justify-content: flex-start !important; /* Force left alignment in right slot */
+}
+
+/* Ensure inner wrappers in 2up slots respect alignment */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper {
+    justify-content: flex-end !important; /* Force right alignment in left slot */
+}
+
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper {
+    justify-content: flex-start !important; /* Force left alignment in right slot */
+}
+
+/* 2up portrait items: ensure they respect slot alignment */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .carousel__item--portrait,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item--portrait {
+    margin-left: auto !important; /* Push portrait items to the right in left slot */
+    margin-right: 0 !important;
+}
+
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .carousel__item--portrait,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item--portrait {
+    margin-left: 0 !important;
+    margin-right: auto !important; /* Push portrait items to the left in right slot */
+}
+
+/* 2up Mirror templates - flip left or right side horizontally */
+/* Apply flip to the content inside animation-handler to preserve rotation transform on handler */
+.carousel__item-wrapper--2up.carousel__mirror--flip .animation-handler .carousel__item-wrapper,
+.carousel__item-wrapper--2up.carousel__mirror--flip .animation-handler .carousel__item,
+.carousel__item-wrapper--2up.carousel__mirror--flip .animation-handler img,
+.carousel__item-wrapper--2up.carousel__mirror--flip .animation-handler video {
+    transform: scaleX(-1);
+}
+
+/* If no animation handler, flip direct children */
+.carousel__item-wrapper--2up.carousel__mirror--flip > .carousel__item:not(.animation-handler),
+.carousel__item-wrapper--2up.carousel__mirror--flip > img:not(.animation-handler),
+.carousel__item-wrapper--2up.carousel__mirror--flip > video:not(.animation-handler) {
+    transform: scaleX(-1);
+}
+
+/* 2up landscape and square items: ensure they also respect slot alignment */
+/* Left slot: align landscape/square items to the right edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper video.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper img.carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper video.carousel__item--square {
+    object-position: right center !important; /* Align to right edge */
+}
+
+/* Right slot: align landscape/square items to the left edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper video.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper img.carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper video.carousel__item--square {
+    object-position: left center !important; /* Align to left edge */
 }
 
 /* Nested item-wrapper with --2up class should be 100% width (inside animation-handler) */
@@ -181,7 +274,7 @@ body:has(.carousel__wrapper) {
 /* The 2x2 grid naturally creates 16:9 slots when the container is 16:9 */
 .carousel__item-wrapper--4up {
     display: flex !important;
-    justify-content: center;
+    justify-content: center; /* Default center - will be overridden by slot position for portrait items */
     align-items: stretch; /* Changed from center to stretch so items fill height */
     width: 100%;
     height: 100%;
@@ -192,6 +285,15 @@ body:has(.carousel__wrapper) {
     visibility: visible !important;
 }
 
+/* 4up slot alignment: left column slots align right, right column slots align left - for portrait items */
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--left {
+    justify-content: flex-end !important; /* Align content to the right edge */
+}
+
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--right {
+    justify-content: flex-start !important; /* Align content to the left edge */
+}
+
 /* Base carousel item - default styles */
 /* Note: Specific layout rules below will override these */
 .carousel__item {
@@ -200,6 +302,40 @@ body:has(.carousel__wrapper) {
     object-fit: cover;
     object-position: center;
     box-sizing: border-box;
+}
+
+/* CRITICAL: Ensure all images/videos in 2up slots are 100% width - override any conflicting rules */
+/* This rule has maximum specificity to override any other width rules */
+/* Left slot: align images/videos to the right edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > .animation-handler > .carousel__item-wrapper > img,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > .animation-handler > .carousel__item-wrapper > video,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > .animation-handler > .carousel__item-wrapper > .carousel__item,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > img,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > video,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left > .carousel__item {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    object-position: right center !important; /* Align to right edge */
+}
+
+/* Right slot: align images/videos to the left edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > .animation-handler > .carousel__item-wrapper > img,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > .animation-handler > .carousel__item-wrapper > video,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > .animation-handler > .carousel__item-wrapper > .carousel__item,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > img,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > video,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right > .carousel__item {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    object-position: left center !important; /* Align to left edge */
 }
 
 /* 1up items: base styles - use contain to preserve aspect ratio */
@@ -262,29 +398,48 @@ body:has(.carousel__wrapper) {
 
 /* 2up items: MUST be 100% of their wrapper (wrapper is 50% of screen) */
 /* Target img, picture, and video directly - simpler and more reliable */
-.carousel__item-wrapper--2up img,
-.carousel__item-wrapper--2up picture,
-.carousel__item-wrapper--2up video {
+/* CRITICAL: These rules must override any other width rules */
+/* Exclude slot-specific items - they have their own object-position rules */
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) img,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) picture,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) video,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) img,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) picture,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) video {
     width: 100% !important;
     height: 100% !important;
-    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
-    object-position: center !important;
-    display: block !important;
-}
-
-/* Also target .carousel__item class for compatibility */
-.carousel__item-wrapper--2up .carousel__item {
-    width: 100% !important;
-    height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
     object-position: center !important;
     display: block !important;
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0 !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+}
+
+/* Also target .carousel__item class for compatibility */
+/* Exclude slot-specific items - they have their own object-position rules */
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .carousel__item,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .carousel__item {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
+    object-position: center !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
 }
 
 /* Animation handler: Must also be 100% of wrapper */
+/* Inherit alignment from parent slot */
 .carousel__item-wrapper--2up .animation-handler {
     width: 100% !important;
     height: 100% !important;
@@ -294,13 +449,15 @@ body:has(.carousel__wrapper) {
     max-height: 100% !important;
     display: flex !important;
     align-items: stretch !important;
-    justify-content: center !important;
+    justify-content: inherit !important; /* Inherit from parent slot (left/right alignment) */
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
 }
 
+
 /* Inner item-wrapper div inside animation handler must also be 100% */
+/* Inherit alignment from parent slot */
 .carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper {
     width: 100% !important;
     height: 100% !important;
@@ -310,7 +467,7 @@ body:has(.carousel__wrapper) {
     max-height: 100% !important;
     display: flex !important;
     align-items: stretch !important;
-    justify-content: center !important;
+    justify-content: inherit !important; /* Inherit from parent slot (left/right alignment) */
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
@@ -332,35 +489,84 @@ body:has(.carousel__wrapper) {
     opacity: 1 !important;
 }
 
-/* 2up: Different object-fit based on aspect ratio */
-/* Portrait: Use contain to fit full height, maintain aspect ratio */
-.carousel__item-wrapper--2up .carousel__item--portrait {
+/* 2up: Use CSS custom properties for precise aspect ratio control */
+/* Base styles for all 2up items - use custom properties when available */
+.carousel__item-wrapper--2up .carousel__item,
+.carousel__slide--2up .carousel__item-wrapper--2up .carousel__item {
     width: 100% !important;
     height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Use aspect-ratio from CSS custom property if available for more precise sizing */
+    aspect-ratio: var(--item-aspect-ratio, auto);
+}
+
+/* Portrait: Use contain to fit full height, maintain aspect ratio */
+/* For portrait items, allow width to be auto so they can align properly within their container */
+.carousel__item-wrapper--2up .carousel__item--portrait,
+.carousel__slide--2up .carousel__item-wrapper--2up .carousel__item--portrait,
+.carousel__item-wrapper--2up img.carousel__item--portrait,
+.carousel__item-wrapper--2up video.carousel__item--portrait {
+    width: auto !important; /* Allow width to be auto for proper alignment */
+    height: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important; /* Prevent overflow */
     object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
     object-position: center !important;
     display: block !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Use precise aspect ratio from metadata */
+    aspect-ratio: var(--item-aspect-ratio, auto);
 }
 
 /* Landscape: Use cover to fill height, crop left/right if needed */
-.carousel__item-wrapper--2up .carousel__item--landscape {
+/* For very wide items (aspect ratio > 2.0), use more aggressive cropping */
+.carousel__item-wrapper--2up .carousel__item--landscape,
+.carousel__slide--2up .carousel__item-wrapper--2up .carousel__item--landscape,
+.carousel__item-wrapper--2up img.carousel__item--landscape,
+.carousel__item-wrapper--2up video.carousel__item--landscape {
     width: 100% !important;
     height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     object-fit: cover !important; /* Fill container height, crop width if needed */
     object-position: center !important;
     display: block !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Use precise aspect ratio from metadata */
+    aspect-ratio: var(--item-aspect-ratio, auto);
+}
+
+/* Ultra-wide landscape items (aspect ratio > 2.5) - ensure they fill height completely */
+.carousel__item-wrapper--2up .carousel__item--landscape[style*="--item-aspect-ratio"] {
+    /* Additional rules for ultra-wide items can be added here using CSS custom property */
 }
 
 /* Square: Use contain to fit within container */
-.carousel__item-wrapper--2up .carousel__item--square {
+.carousel__item-wrapper--2up .carousel__item--square,
+.carousel__slide--2up .carousel__item-wrapper--2up .carousel__item--square,
+.carousel__item-wrapper--2up img.carousel__item--square,
+.carousel__item-wrapper--2up video.carousel__item--square {
     width: 100% !important;
     height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     object-fit: contain !important; /* Fits entire image within container, maintains aspect ratio */
     object-position: center !important;
     display: block !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* Use precise aspect ratio from metadata */
+    aspect-ratio: var(--item-aspect-ratio, auto);
 }
 
 /* 4up: All items fit to height of slot, centered, cropped left/right */
+/* Use CSS custom properties for precise aspect ratio control */
 .carousel__item-wrapper--4up .carousel__item--square,
 .carousel__item-wrapper--4up .carousel__item--landscape,
 .carousel__item-wrapper--4up .carousel__item--portrait {
@@ -371,10 +577,637 @@ body:has(.carousel__wrapper) {
     min-height: 0 !important;
     object-fit: cover !important; /* Fill height, crop width */
     object-position: center;
-    margin: 0 auto;
+    margin: 0 auto; /* Default center - will be overridden for portrait items */
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    /* Use precise aspect ratio from metadata for better sizing */
+    aspect-ratio: var(--item-aspect-ratio, auto);
+}
+
+/* 4up portrait items: align based on slot position (left column right, right column left) */
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--left .carousel__item--portrait,
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--left .animation-handler .carousel__item--portrait {
+    margin-left: auto !important; /* Push portrait items to the right in left column slots */
+    margin-right: 0 !important;
+}
+
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--right .carousel__item--portrait,
+.carousel__slide--4up > .carousel__item-wrapper--4up.carousel__slot--right .animation-handler .carousel__item--portrait {
+    margin-left: 0 !important;
+    margin-right: auto !important; /* Push portrait items to the left in right column slots */
+}
+
+/* ============================================
+   4UP-WARHOL TEMPLATE - Warhol-style color tints
+   Inspired by Andy Warhol's famous Marilyn Monroe artwork
+   ============================================ */
+
+/* Warhol color tints using CSS filters - INCREASED INTENSITY */
+/* Yellow tint (top-left) - warm, golden tone */
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow video {
+    filter: sepia(100%) saturate(300%) hue-rotate(20deg) brightness(1.2) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+/* Cyan tint (top-right) - cool blue tone */
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan video {
+    filter: sepia(0%) saturate(250%) hue-rotate(180deg) brightness(1.15) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+/* Magenta tint (bottom-left) - vibrant pink/red tone */
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta video {
+    filter: sepia(70%) saturate(300%) hue-rotate(310deg) brightness(1.2) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+/* Green tint (bottom-right) - fresh green tone */
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green video {
+    filter: sepia(50%) saturate(280%) hue-rotate(95deg) brightness(1.15) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+/* Ensure Warhol tints work with animation handlers - apply same INCREASED INTENSITY filters */
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow .animation-handler .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow .animation-handler img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-yellow .animation-handler video {
+    filter: sepia(100%) saturate(300%) hue-rotate(20deg) brightness(1.2) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan .animation-handler .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan .animation-handler img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-cyan .animation-handler video {
+    filter: sepia(0%) saturate(250%) hue-rotate(180deg) brightness(1.15) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta .animation-handler .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta .animation-handler img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-magenta .animation-handler video {
+    filter: sepia(70%) saturate(300%) hue-rotate(310deg) brightness(1.2) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green .animation-handler .carousel__item,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green .animation-handler img,
+.carousel__item-wrapper--4up.carousel__warhol--warhol-green .animation-handler video {
+    filter: sepia(50%) saturate(280%) hue-rotate(95deg) brightness(1.15) contrast(1.1);
+    mix-blend-mode: multiply;
+}
+
+/* Base 4up item styles with custom properties */
+.carousel__item-wrapper--4up .carousel__item {
+    /* Use aspect-ratio from CSS custom property if available */
+    aspect-ratio: var(--item-aspect-ratio, auto);
+}
+
+/* ============================================
+   ITEM FILTERS - Visual effects for exciting visuals
+   ============================================ */
+
+/* Vintage Sepia - warm, nostalgic tone */
+.carousel__item-wrapper.carousel__filter--vintage-sepia .carousel__item,
+.carousel__item-wrapper.carousel__filter--vintage-sepia img,
+.carousel__item-wrapper.carousel__filter--vintage-sepia video {
+    filter: sepia(100%) saturate(120%) hue-rotate(10deg) brightness(0.95) contrast(1.1);
+}
+
+.carousel__item-wrapper.carousel__filter--vintage-sepia .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--vintage-sepia .animation-handler img,
+.carousel__item-wrapper.carousel__filter--vintage-sepia .animation-handler video {
+    filter: sepia(100%) saturate(120%) hue-rotate(10deg) brightness(0.95) contrast(1.1);
+}
+
+/* Cool Blue - icy, refreshing tone */
+.carousel__item-wrapper.carousel__filter--cool-blue .carousel__item,
+.carousel__item-wrapper.carousel__filter--cool-blue img,
+.carousel__item-wrapper.carousel__filter--cool-blue video {
+    filter: sepia(0%) saturate(200%) hue-rotate(200deg) brightness(1.1) contrast(1.05);
+}
+
+.carousel__item-wrapper.carousel__filter--cool-blue .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--cool-blue .animation-handler img,
+.carousel__item-wrapper.carousel__filter--cool-blue .animation-handler video {
+    filter: sepia(0%) saturate(200%) hue-rotate(200deg) brightness(1.1) contrast(1.05);
+}
+
+/* Warm Orange - cozy, sunset tone */
+.carousel__item-wrapper.carousel__filter--warm-orange .carousel__item,
+.carousel__item-wrapper.carousel__filter--warm-orange img,
+.carousel__item-wrapper.carousel__filter--warm-orange video {
+    filter: sepia(80%) saturate(250%) hue-rotate(15deg) brightness(1.15) contrast(1.1);
+}
+
+.carousel__item-wrapper.carousel__filter--warm-orange .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--warm-orange .animation-handler img,
+.carousel__item-wrapper.carousel__filter--warm-orange .animation-handler video {
+    filter: sepia(80%) saturate(250%) hue-rotate(15deg) brightness(1.15) contrast(1.1);
+}
+
+/* Neon Pink - vibrant, electric tone */
+.carousel__item-wrapper.carousel__filter--neon-pink .carousel__item,
+.carousel__item-wrapper.carousel__filter--neon-pink img,
+.carousel__item-wrapper.carousel__filter--neon-pink video {
+    filter: sepia(60%) saturate(350%) hue-rotate(320deg) brightness(1.2) contrast(1.15);
+}
+
+.carousel__item-wrapper.carousel__filter--neon-pink .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--neon-pink .animation-handler img,
+.carousel__item-wrapper.carousel__filter--neon-pink .animation-handler video {
+    filter: sepia(60%) saturate(350%) hue-rotate(320deg) brightness(1.2) contrast(1.15);
+}
+
+/* Electric Cyan - bright, energetic tone */
+.carousel__item-wrapper.carousel__filter--electric-cyan .carousel__item,
+.carousel__item-wrapper.carousel__filter--electric-cyan img,
+.carousel__item-wrapper.carousel__filter--electric-cyan video {
+    filter: sepia(0%) saturate(300%) hue-rotate(180deg) brightness(1.25) contrast(1.1);
+}
+
+.carousel__item-wrapper.carousel__filter--electric-cyan .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--electric-cyan .animation-handler img,
+.carousel__item-wrapper.carousel__filter--electric-cyan .animation-handler video {
+    filter: sepia(0%) saturate(300%) hue-rotate(180deg) brightness(1.25) contrast(1.1);
+}
+
+/* Golden Hour - warm, golden glow */
+.carousel__item-wrapper.carousel__filter--golden-hour .carousel__item,
+.carousel__item-wrapper.carousel__filter--golden-hour img,
+.carousel__item-wrapper.carousel__filter--golden-hour video {
+    filter: sepia(100%) saturate(180%) hue-rotate(25deg) brightness(1.2) contrast(1.05);
+}
+
+.carousel__item-wrapper.carousel__filter--golden-hour .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--golden-hour .animation-handler img,
+.carousel__item-wrapper.carousel__filter--golden-hour .animation-handler video {
+    filter: sepia(100%) saturate(180%) hue-rotate(25deg) brightness(1.2) contrast(1.05);
+}
+
+/* Noir Black & White - classic monochrome */
+.carousel__item-wrapper.carousel__filter--noir-bw .carousel__item,
+.carousel__item-wrapper.carousel__filter--noir-bw img,
+.carousel__item-wrapper.carousel__filter--noir-bw video {
+    filter: grayscale(100%) contrast(1.2) brightness(0.9);
+}
+
+.carousel__item-wrapper.carousel__filter--noir-bw .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--noir-bw .animation-handler img,
+.carousel__item-wrapper.carousel__filter--noir-bw .animation-handler video {
+    filter: grayscale(100%) contrast(1.2) brightness(0.9);
+}
+
+/* Sunset Red - warm, dramatic red tone */
+.carousel__item-wrapper.carousel__filter--sunset-red .carousel__item,
+.carousel__item-wrapper.carousel__filter--sunset-red img,
+.carousel__item-wrapper.carousel__filter--sunset-red video {
+    filter: sepia(70%) saturate(300%) hue-rotate(350deg) brightness(1.1) contrast(1.15);
+}
+
+.carousel__item-wrapper.carousel__filter--sunset-red .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--sunset-red .animation-handler img,
+.carousel__item-wrapper.carousel__filter--sunset-red .animation-handler video {
+    filter: sepia(70%) saturate(300%) hue-rotate(350deg) brightness(1.1) contrast(1.15);
+}
+
+/* Forest Green - natural, earthy tone */
+.carousel__item-wrapper.carousel__filter--forest-green .carousel__item,
+.carousel__item-wrapper.carousel__filter--forest-green img,
+.carousel__item-wrapper.carousel__filter--forest-green video {
+    filter: sepia(40%) saturate(250%) hue-rotate(100deg) brightness(1.05) contrast(1.1);
+}
+
+.carousel__item-wrapper.carousel__filter--forest-green .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--forest-green .animation-handler img,
+.carousel__item-wrapper.carousel__filter--forest-green .animation-handler video {
+    filter: sepia(40%) saturate(250%) hue-rotate(100deg) brightness(1.05) contrast(1.1);
+}
+
+/* Purple Haze - dreamy, mystical tone */
+.carousel__item-wrapper.carousel__filter--purple-haze .carousel__item,
+.carousel__item-wrapper.carousel__filter--purple-haze img,
+.carousel__item-wrapper.carousel__filter--purple-haze video {
+    filter: sepia(50%) saturate(280%) hue-rotate(280deg) brightness(1.1) contrast(1.1);
+}
+
+.carousel__item-wrapper.carousel__filter--purple-haze .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--purple-haze .animation-handler img,
+.carousel__item-wrapper.carousel__filter--purple-haze .animation-handler video {
+    filter: sepia(50%) saturate(280%) hue-rotate(280deg) brightness(1.1) contrast(1.1);
+}
+
+/* ============================================
+   DYNAMIC FILTERS - Animated and complex visual effects
+   ============================================ */
+
+/* Distortion - warped, wavy effect */
+.carousel__item-wrapper.carousel__filter--distortion {
+    overflow: hidden;
+}
+
+.carousel__item-wrapper.carousel__filter--distortion .carousel__item,
+.carousel__item-wrapper.carousel__filter--distortion img,
+.carousel__item-wrapper.carousel__filter--distortion video {
+    filter: blur(0.5px);
+    transform: scale(1.02);
+    animation: distortion-wave 3s ease-in-out infinite;
+}
+
+@keyframes distortion-wave {
+    0%, 100% {
+        transform: scale(1.02) skew(0deg);
+        filter: blur(0.5px) contrast(1.1);
+    }
+    25% {
+        transform: scale(1.03) skew(1deg);
+        filter: blur(0.8px) contrast(1.15);
+    }
+    50% {
+        transform: scale(1.02) skew(0deg);
+        filter: blur(0.5px) contrast(1.1);
+    }
+    75% {
+        transform: scale(1.03) skew(-1deg);
+        filter: blur(0.8px) contrast(1.15);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--distortion .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--distortion .animation-handler img,
+.carousel__item-wrapper.carousel__filter--distortion .animation-handler video {
+    filter: blur(0.5px);
+    transform: scale(1.02);
+    animation: distortion-wave 3s ease-in-out infinite;
+}
+
+/* Rainbow - animated color shifting */
+.carousel__item-wrapper.carousel__filter--rainbow .carousel__item,
+.carousel__item-wrapper.carousel__filter--rainbow img,
+.carousel__item-wrapper.carousel__filter--rainbow video {
+    animation: rainbow-shift 4s linear infinite;
+    filter: brightness(1.1) saturate(1.3);
+}
+
+@keyframes rainbow-shift {
+    0% { filter: brightness(1.1) saturate(1.3) hue-rotate(0deg); }
+    16.66% { filter: brightness(1.1) saturate(1.3) hue-rotate(60deg); }
+    33.33% { filter: brightness(1.1) saturate(1.3) hue-rotate(120deg); }
+    50% { filter: brightness(1.1) saturate(1.3) hue-rotate(180deg); }
+    66.66% { filter: brightness(1.1) saturate(1.3) hue-rotate(240deg); }
+    83.33% { filter: brightness(1.1) saturate(1.3) hue-rotate(300deg); }
+    100% { filter: brightness(1.1) saturate(1.3) hue-rotate(360deg); }
+}
+
+.carousel__item-wrapper.carousel__filter--rainbow .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--rainbow .animation-handler img,
+.carousel__item-wrapper.carousel__filter--rainbow .animation-handler video {
+    animation: rainbow-shift 4s linear infinite;
+    filter: brightness(1.1) saturate(1.3);
+}
+
+/* Double Vision - duplicate/blur effect using box-shadow */
+.carousel__item-wrapper.carousel__filter--double-vision {
+    position: relative;
+}
+
+.carousel__item-wrapper.carousel__filter--double-vision .carousel__item,
+.carousel__item-wrapper.carousel__filter--double-vision img,
+.carousel__item-wrapper.carousel__filter--double-vision video {
+    filter: blur(0.5px);
+    box-shadow: 4px 2px 0 0 rgba(0, 0, 0, 0.3),
+                -4px -2px 0 0 rgba(255, 255, 255, 0.2);
+    animation: double-vision-shift 2s ease-in-out infinite;
+}
+
+@keyframes double-vision-shift {
+    0%, 100% {
+        filter: blur(0.5px);
+        transform: translate(0);
+    }
+    50% {
+        filter: blur(1px);
+        transform: translate(2px, 1px);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--double-vision .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--double-vision .animation-handler img,
+.carousel__item-wrapper.carousel__filter--double-vision .animation-handler video {
+    filter: blur(0.5px);
+    box-shadow: 4px 2px 0 0 rgba(0, 0, 0, 0.3),
+                -4px -2px 0 0 rgba(255, 255, 255, 0.2);
+    animation: double-vision-shift 2s ease-in-out infinite;
+}
+
+/* Glitch - digital glitch effect */
+.carousel__item-wrapper.carousel__filter--glitch {
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel__item-wrapper.carousel__filter--glitch .carousel__item,
+.carousel__item-wrapper.carousel__filter--glitch img,
+.carousel__item-wrapper.carousel__filter--glitch video {
+    animation: glitch 0.3s infinite;
+    filter: contrast(1.2) brightness(1.1);
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+        filter: contrast(1.2) brightness(1.1);
+    }
+    20% {
+        transform: translate(-2px, 2px);
+        filter: contrast(1.3) brightness(1.15) hue-rotate(90deg);
+    }
+    40% {
+        transform: translate(-2px, -2px);
+        filter: contrast(1.2) brightness(1.1) hue-rotate(-90deg);
+    }
+    60% {
+        transform: translate(2px, 2px);
+        filter: contrast(1.3) brightness(1.15);
+    }
+    80% {
+        transform: translate(2px, -2px);
+        filter: contrast(1.2) brightness(1.1);
+    }
+    100% {
+        transform: translate(0);
+        filter: contrast(1.2) brightness(1.1);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--glitch .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--glitch .animation-handler img,
+.carousel__item-wrapper.carousel__filter--glitch .animation-handler video {
+    animation: glitch 0.3s infinite;
+    filter: contrast(1.2) brightness(1.1);
+}
+
+/* Kaleidoscope - mirror/pattern effect */
+.carousel__item-wrapper.carousel__filter--kaleidoscope .carousel__item,
+.carousel__item-wrapper.carousel__filter--kaleidoscope img,
+.carousel__item-wrapper.carousel__filter--kaleidoscope video {
+    filter: saturate(1.5) contrast(1.2);
+    animation: kaleidoscope-rotate 8s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes kaleidoscope-rotate {
+    0% {
+        filter: saturate(1.5) contrast(1.2) hue-rotate(0deg);
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        filter: saturate(1.5) contrast(1.2) hue-rotate(90deg);
+        transform: scale(1.05) rotate(90deg);
+    }
+    50% {
+        filter: saturate(1.5) contrast(1.2) hue-rotate(180deg);
+        transform: scale(1) rotate(180deg);
+    }
+    75% {
+        filter: saturate(1.5) contrast(1.2) hue-rotate(270deg);
+        transform: scale(1.05) rotate(270deg);
+    }
+    100% {
+        filter: saturate(1.5) contrast(1.2) hue-rotate(360deg);
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--kaleidoscope .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--kaleidoscope .animation-handler img,
+.carousel__item-wrapper.carousel__filter--kaleidoscope .animation-handler video {
+    filter: saturate(1.5) contrast(1.2);
+    animation: kaleidoscope-rotate 8s linear infinite;
+    transform-origin: center center;
+}
+
+/* Chromatic Aberration - color separation effect */
+.carousel__item-wrapper.carousel__filter--chromatic-aberration {
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel__item-wrapper.carousel__filter--chromatic-aberration .carousel__item,
+.carousel__item-wrapper.carousel__filter--chromatic-aberration img,
+.carousel__item-wrapper.carousel__filter--chromatic-aberration video {
+    filter: blur(0.5px) contrast(1.2);
+    animation: chromatic-pulse 2s ease-in-out infinite;
+    box-shadow: 
+        -2px 0 0 rgba(255, 0, 0, 0.5),
+        2px 0 0 rgba(0, 255, 255, 0.5);
+}
+
+@keyframes chromatic-pulse {
+    0%, 100% {
+        filter: blur(0.5px) contrast(1.2);
+        transform: translate(0);
+        box-shadow: 
+            -2px 0 0 rgba(255, 0, 0, 0.5),
+            2px 0 0 rgba(0, 255, 255, 0.5);
+    }
+    50% {
+        filter: blur(0.8px) contrast(1.3);
+        transform: translate(1px, -1px);
+        box-shadow: 
+            -3px 0 0 rgba(255, 0, 0, 0.6),
+            3px 0 0 rgba(0, 255, 255, 0.6);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--chromatic-aberration .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--chromatic-aberration .animation-handler img,
+.carousel__item-wrapper.carousel__filter--chromatic-aberration .animation-handler video {
+    filter: blur(0.5px) contrast(1.2);
+    animation: chromatic-pulse 2s ease-in-out infinite;
+    box-shadow: 
+        -2px 0 0 rgba(255, 0, 0, 0.5),
+        2px 0 0 rgba(0, 255, 255, 0.5);
+}
+
+/* Motion Blur - directional blur effect */
+.carousel__item-wrapper.carousel__filter--motion-blur .carousel__item,
+.carousel__item-wrapper.carousel__filter--motion-blur img,
+.carousel__item-wrapper.carousel__filter--motion-blur video {
+    filter: blur(3px) contrast(1.1);
+    animation: motion-blur-sweep 3s ease-in-out infinite;
+}
+
+@keyframes motion-blur-sweep {
+    0%, 100% {
+        filter: blur(3px) contrast(1.1);
+        transform: translateX(0);
+    }
+    50% {
+        filter: blur(5px) contrast(1.15);
+        transform: translateX(2px);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--motion-blur .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--motion-blur .animation-handler img,
+.carousel__item-wrapper.carousel__filter--motion-blur .animation-handler video {
+    filter: blur(3px) contrast(1.1);
+    animation: motion-blur-sweep 3s ease-in-out infinite;
+}
+
+/* Pixelate - pixelation effect (simulated) */
+.carousel__item-wrapper.carousel__filter--pixelate .carousel__item,
+.carousel__item-wrapper.carousel__filter--pixelate img,
+.carousel__item-wrapper.carousel__filter--pixelate video {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: contrast(1.2) saturate(1.1);
+    transform: scale(0.98);
+}
+
+.carousel__item-wrapper.carousel__filter--pixelate .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--pixelate .animation-handler img,
+.carousel__item-wrapper.carousel__filter--pixelate .animation-handler video {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    filter: contrast(1.2) saturate(1.1);
+    transform: scale(0.98);
+}
+
+/* VHS - retro VHS effect */
+.carousel__item-wrapper.carousel__filter--vhs {
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel__item-wrapper.carousel__filter--vhs::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.1) 100%);
+    animation: vhs-line 0.5s linear infinite;
+    z-index: 3;
+    pointer-events: none;
+}
+
+@keyframes vhs-line {
+    0% {
+        top: -2px;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--vhs .carousel__item,
+.carousel__item-wrapper.carousel__filter--vhs img,
+.carousel__item-wrapper.carousel__filter--vhs video {
+    filter: contrast(1.1) brightness(0.95) saturate(0.8);
+    animation: vhs-scan 0.1s linear infinite;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes vhs-scan {
+    0% {
+        filter: contrast(1.1) brightness(0.95) saturate(0.8);
+    }
+    50% {
+        filter: contrast(1.15) brightness(0.98) saturate(0.85);
+    }
+    100% {
+        filter: contrast(1.1) brightness(0.95) saturate(0.8);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--vhs .animation-handler {
+    position: relative;
+    z-index: 1;
+}
+
+.carousel__item-wrapper.carousel__filter--vhs .animation-handler::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.1) 100%);
+    animation: vhs-line 0.5s linear infinite;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.carousel__item-wrapper.carousel__filter--vhs .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--vhs .animation-handler img,
+.carousel__item-wrapper.carousel__filter--vhs .animation-handler video {
+    filter: contrast(1.1) brightness(0.95) saturate(0.8);
+    animation: vhs-scan 0.1s linear infinite;
+}
+
+/* Neon Glow - glowing edges effect */
+.carousel__item-wrapper.carousel__filter--neon-glow {
+    position: relative;
+}
+
+.carousel__item-wrapper.carousel__filter--neon-glow .carousel__item,
+.carousel__item-wrapper.carousel__filter--neon-glow img,
+.carousel__item-wrapper.carousel__filter--neon-glow video {
+    filter: brightness(1.2) saturate(1.4) contrast(1.1);
+    animation: neon-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5),
+                0 0 20px rgba(0, 255, 255, 0.3),
+                0 0 30px rgba(0, 255, 255, 0.2);
+}
+
+@keyframes neon-pulse {
+    0%, 100% {
+        filter: brightness(1.2) saturate(1.4) contrast(1.1);
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5),
+                    0 0 20px rgba(0, 255, 255, 0.3),
+                    0 0 30px rgba(0, 255, 255, 0.2);
+    }
+    50% {
+        filter: brightness(1.3) saturate(1.5) contrast(1.15);
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.7),
+                    0 0 30px rgba(0, 255, 255, 0.5),
+                    0 0 45px rgba(0, 255, 255, 0.3);
+    }
+}
+
+.carousel__item-wrapper.carousel__filter--neon-glow .animation-handler .carousel__item,
+.carousel__item-wrapper.carousel__filter--neon-glow .animation-handler img,
+.carousel__item-wrapper.carousel__filter--neon-glow .animation-handler video {
+    filter: brightness(1.2) saturate(1.4) contrast(1.1);
+    animation: neon-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5),
+                0 0 20px rgba(0, 255, 255, 0.3),
+                0 0 30px rgba(0, 255, 255, 0.2);
 }
 
 
@@ -403,6 +1236,8 @@ body:has(.carousel__wrapper) {
 }
 
 /* Force 2up item wrappers to be exactly 50% with no spacing */
+/* This rule applies to all 2up wrappers, slot-specific alignment is handled above */
+/* NOTE: This rule does NOT set justify-content - that's handled by slot-specific rules above */
 .carousel__slide--2up > .carousel__item-wrapper--2up {
     flex: 0 0 50% !important;
     flex-basis: 50% !important;
@@ -414,6 +1249,7 @@ body:has(.carousel__wrapper) {
     margin: 0 !important;
     padding: 0 !important;
     box-sizing: border-box !important;
+    /* DO NOT set justify-content here - slot-specific rules above handle alignment */
 }
 
 /* Ensure only 2 items per 2up slide - hide any extra */
@@ -479,7 +1315,7 @@ body:has(.carousel__wrapper) {
 }
 
 /* Fallback: if no animation type, still show the item */
-.animation-handler:not(.fadeInOut):not(.dissolve) {
+.animation-handler:not(.fadeInOut):not(.dissolve):not(.fragment):not(.turbulentDissolve) {
     opacity: 1;
 }
 
@@ -496,7 +1332,7 @@ body:has(.carousel__wrapper) {
     max-height: 100% !important;
     display: flex !important;
     align-items: stretch !important;
-    justify-content: center !important;
+    justify-content: inherit !important; /* Inherit from parent slot (left/right alignment) */
     flex: 1 1 100% !important; /* Take full available space */
     opacity: 1 !important; /* Force visibility for 2up/4up */
     visibility: visible !important;
@@ -507,15 +1343,39 @@ body:has(.carousel__wrapper) {
     transition: none !important;
 }
 
+/* Inner item-wrapper div inside animation handler for 4up - inherit alignment */
+.carousel__item-wrapper--4up .animation-handler .carousel__item-wrapper {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: inherit !important; /* Inherit from parent slot (left/right alignment) */
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
 /* Ensure images inside animation handler follow aspect-ratio-specific rules */
-/* Base styles for all items */
-.carousel__item-wrapper--2up .animation-handler img,
-.carousel__item-wrapper--2up .animation-handler picture,
-.carousel__item-wrapper--2up .animation-handler video,
-.carousel__item-wrapper--2up .animation-handler .carousel__item,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item {
+/* Base styles for all items - CRITICAL: Must be 100% width of slot */
+/* Exclude slot-specific items - they have their own rules */
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler img,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler picture,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler video,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper img,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper video,
+.carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper .carousel__item,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler img,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler picture,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler video,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper img,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper video,
+.carousel__slide--2up .carousel__item-wrapper--2up:not(.carousel__slot--left):not(.carousel__slot--right) .animation-handler .carousel__item-wrapper .carousel__item {
     width: 100% !important;
     height: 100% !important;
     min-width: 100% !important;
@@ -526,8 +1386,20 @@ body:has(.carousel__wrapper) {
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0 !important;
-    object-position: center !important;
-    /* object-fit will be set by aspect-ratio-specific rules below */
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    /* object-fit and object-position will be set by aspect-ratio-specific and slot-specific rules below */
+}
+
+/* 2up portrait items in animation handler - allow auto width for proper alignment */
+.carousel__item-wrapper--2up .animation-handler .carousel__item--portrait,
+.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--portrait,
+.carousel__slide--2up .carousel__item-wrapper--2up .animation-handler .carousel__item--portrait,
+.carousel__slide--2up .carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--portrait {
+    width: auto !important; /* Allow width to be auto for proper alignment */
+    height: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
 }
 
 /* Portrait: contain to fit full height */
@@ -539,19 +1411,41 @@ body:has(.carousel__wrapper) {
 }
 
 /* Landscape: cover to fill height, crop width */
-.carousel__item-wrapper--2up .animation-handler .carousel__item--landscape,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--landscape,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video.carousel__item--landscape {
+/* Left slot: align landscape to right edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper video.carousel__item--landscape {
     object-fit: cover !important;
+    object-position: right center !important; /* Align to right edge */
+}
+
+/* Right slot: align landscape to left edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper .carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper img.carousel__item--landscape,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper video.carousel__item--landscape {
+    object-fit: cover !important;
+    object-position: left center !important; /* Align to left edge */
 }
 
 /* Square: contain to fit within container */
-.carousel__item-wrapper--2up .animation-handler .carousel__item--square,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper .carousel__item--square,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper img.carousel__item--square,
-.carousel__item-wrapper--2up .animation-handler .carousel__item-wrapper video.carousel__item--square {
+/* Left slot: align square to right edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper img.carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--left .animation-handler .carousel__item-wrapper video.carousel__item--square {
     object-fit: contain !important;
+    object-position: right center !important; /* Align to right edge */
+}
+
+/* Right slot: align square to left edge */
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper .carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper img.carousel__item--square,
+.carousel__slide--2up > .carousel__item-wrapper--2up.carousel__slot--right .animation-handler .carousel__item-wrapper video.carousel__item--square {
+    object-fit: contain !important;
+    object-position: left center !important; /* Align to left edge */
 }
 
 /* Force visibility for active items in 2up/4up */

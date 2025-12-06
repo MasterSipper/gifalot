@@ -9,4 +9,6 @@ export enum TransitionType {
   WOBBLE = 'wobble',
   JELLO = 'jello',
   HEART_BEAT = 'heartBeat',
+  FRAGMENT = 'fragment',
+  TURBULENT_DISSOLVE = 'turbulentDissolve',
 }

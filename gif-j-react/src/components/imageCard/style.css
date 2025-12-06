@@ -1,7 +1,9 @@
 .image_card {
     position: relative;
-    max-width: 225px;
-    height: 225px;
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
 }
 
 .image_card__img {
@@ -10,12 +12,34 @@
     padding: 8px;
     z-index: 1;
     box-sizing: border-box;
-    width: 225px;
-    height: 225px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 .image_card__img:hover{
     cursor: pointer;
+}
+
+/* Landscape and square items: fill the 16:9 container */
+.image_card__img--square,
+.image_card__img--landscape {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Portrait items: fit to height, crop overflow (left/right), center horizontally */
+.image_card__img--portrait {
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: cover; /* Use cover to fill container while maintaining aspect ratio */
+    object-position: center;
+    margin: 0 auto;
+    display: block;
 }
 
 
@@ -31,13 +55,15 @@
 }
 
 .hover {
-    max-width: 225px;
-    height: 225px;
+    max-width: 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
     background-color: rgba(0, 0, 0, 0.8);
     border-radius: 7px;
     box-sizing: border-box;
     position: relative;
-    z-index: 15
+    z-index: 15;
+    overflow: hidden;
 }
 
 .preview__link {

@@ -40,7 +40,9 @@ export const ImageMask = ({ url, name, close, id, deg, list = false, mimeType })
     setRotation((prevState) => newRotation);
   };
 
-  const handleClose = async () => {
+  const handleCloseRef = React.useRef();
+  
+  const handleClose = React.useCallback(async () => {
     if (!list && location.pathname.includes("/dashboard/")) {
       await axiosInstance.patch(`${file}/${id}`, {
         rotation: rotation,
@@ -57,30 +59,59 @@ export const ImageMask = ({ url, name, close, id, deg, list = false, mimeType })
     }
 
     close();
-  };
+  }, [list, location.pathname, id, rotation, folderImages, dispatch, close]);
+
+  handleCloseRef.current = handleClose;
+
+  // Handle keyboard dismissal and click outside
+  React.useEffect(() => {
+    const handleKeyDown = () => {
+      if (handleCloseRef.current) {
+        handleCloseRef.current();
+      }
+    };
+
+    const handleClick = (e) => {
+      if (e.target.classList.contains('mask_wrapper')) {
+        if (handleCloseRef.current) {
+          handleCloseRef.current();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('click', handleClick);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('click', handleClick);
+    };
+  }, []);
 
   return (
-    <div className={"mask_wrapper"}>
-      {isVideo ? (
-        <video
-          ref={imgRef}
-          src={url}
-          style={{ transform: `rotate(${rotation}deg)` }}
-          controls
-          autoPlay
-          muted
-          playsInline
-        />
-      ) : (
-        <img
-          ref={imgRef}
-          src={url}
-          alt={name}
-          style={{ transform: `rotate(${rotation}deg)` }}
-        />
-      )}
+    <div className={"mask_wrapper"} onClick={handleClose}>
+      <div className="mask__content" onClick={(e) => e.stopPropagation()}>
+        {isVideo ? (
+          <video
+            ref={imgRef}
+            src={url}
+            style={{ transform: `rotate(${rotation}deg)` }}
+            controls
+            autoPlay
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            ref={imgRef}
+            src={url}
+            alt={name}
+            style={{ transform: `rotate(${rotation}deg)` }}
+          />
+        )}
+      </div>
 
-      <ul className={"mask__top_panel"}>
+      <ul className={"mask__top_panel"} onClick={(e) => e.stopPropagation()}>
         {!list && location.pathname.includes("/dashboard/") && (
           <>
             <li className={"top_panel__item"}>

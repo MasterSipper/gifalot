@@ -305,3 +305,4 @@ pm2 restart gifalot-backend  # Or your process manager
 - Verify all environment variables are set
 - Test API endpoints directly with Postman/curl
 
+

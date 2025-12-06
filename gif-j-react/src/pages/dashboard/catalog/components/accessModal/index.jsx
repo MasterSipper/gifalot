@@ -7,6 +7,7 @@ import { SetFolder } from "../../../../../store/slices/foldersSlice";
 import { modalSelector } from "../../../store/selector/modalSelector";
 import { accessClosed } from "../../../store/modalSlice/modalSlice";
 import { Button, Input, Modal, notification } from "antd";
+import { QRCodeSVG } from "qrcode.react";
 
 import "./style.css";
 
@@ -20,6 +21,16 @@ export const AccessModal = () => {
   React.useEffect(() => {}, [folderItem, folderItem.private]);
   const textRef = React.useRef();
 
+  // Get the public URL for sharing
+  const getPublicUrl = () => {
+    // Use public URL from env if set, otherwise default to Netlify URL
+    // This allows sharing links that work on other computers even in development
+    const publicUrl = process.env.REACT_APP_PUBLIC_URL || 'https://gifalot.netlify.app';
+    return `${publicUrl}/#/${userInfo.id}/${folderItem.id}/carousel`;
+  };
+
+  const shareUrl = getPublicUrl();
+
   const handleCopyLink = async (e) => {
     e.preventDefault();
     if (folderItem.private) {
@@ -27,22 +38,30 @@ export const AccessModal = () => {
         message: "Only the public folder can be shown",
       });
     }
-    textRef.current.select();
-    document.execCommand("copy");
-    window.getSelection().removeAllRanges();
-
-    // try {
-    //   if (window.isSecureContext && navigator.clipboard)
-    //     await navigator.clipboard.writeText(
-    //       `${window.location.origin}/#/${userInfo.id}/${folderItem.id}/carousel`
-    //     );
-    // } catch (e) {
-    //   console.log(e);
-    // }
-
-    notification.success({
-      message: "link copied to clipboard",
-    });
+    
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+        notification.success({
+          message: "Link copied to clipboard",
+        });
+      } else {
+        // Fallback to old method
+        textRef.current.select();
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+        notification.success({
+          message: "Link copied to clipboard",
+        });
+      }
+    } catch (e) {
+      console.error("Failed to copy link:", e);
+      notification.error({
+        message: "Failed to copy link",
+        description: "Please copy the link manually",
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -88,15 +107,37 @@ export const AccessModal = () => {
       }
     >
       <div className={"access__main__block__bottom"}>
-        <p>Compilation link: </p>{" "}
-        <Input
-          ref={textRef}
-          value={`${window.location.origin}/#/${userInfo.id}/${folderItem.id}/carousel`}
-          style={{ width: "254px" }}
-        />{" "}
-        <Button type={"primary"} onClick={handleCopyLink}>
-          Copy
-        </Button>
+        <div>
+          <p>Compilation link: </p>{" "}
+          <Input
+            ref={textRef}
+            value={shareUrl}
+            style={{ width: "254px" }}
+          />{" "}
+          <Button type={"primary"} onClick={handleCopyLink}>
+            Copy
+          </Button>
+        </div>
+        
+        {/* QR Code for sharing */}
+        <div style={{ textAlign: "center", width: "100%" }}>
+          <p style={{ marginBottom: "10px", fontSize: "14px", color: "#636E72" }}>Scan to open on mobile:</p>
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            padding: "15px",
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            border: "1px solid #DFE6E9"
+          }}>
+            <QRCodeSVG
+              value={shareUrl}
+              size={100}
+              level="H"
+              includeMargin={true}
+            />
+          </div>
+        </div>
       </div>
     </Modal>
   );

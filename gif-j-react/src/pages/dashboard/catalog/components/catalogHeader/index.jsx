@@ -13,6 +13,7 @@ import axiosInstance from "../../../../../helpers/axiosConfig";
 import { collections } from "../../../../../static/api";
 import { useChromecast } from "../../../../../hooks/useChromecast";
 import { RiCastLine } from "react-icons/ri";
+import { Switch } from "antd";
 
 import edit from "../../../../../assets/icons/edit.png";
 import settings from "../../../assets/icons/settings.png";
@@ -26,7 +27,7 @@ import shareBlack from "../../../assets/icons/share-fill__black.png";
 
 import "./style.css";
 
-export const CatalogHeader = () => {
+export const CatalogHeader = ({ showTransitions, onToggleTransitions }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -69,7 +70,9 @@ export const CatalogHeader = () => {
   const handleChromecast = (e) => {
     e.stopPropagation();
     // Use public player route for Chromecast (can be accessed without auth)
-    const carouselUrl = `${window.location.origin}/#/${userInfo?.id}/${folderItem.id}/carousel`;
+    // Use public URL from env if set, otherwise use current origin
+    const publicUrl = process.env.REACT_APP_PUBLIC_URL || window.location.origin;
+    const carouselUrl = `${publicUrl}/#/${userInfo?.id}/${folderItem.id}/carousel`;
     castToChromecast(carouselUrl);
   };
 
@@ -102,15 +105,25 @@ export const CatalogHeader = () => {
 
       <div className={"header__section"}>
         {display === "list" ? (
-          <img
-            className={"header__section__img"}
-            width={24}
-            height={24}
-            src={grid}
-            alt="place"
-            title={"View"}
-            onClick={() => handleChangeView("grid")}
-          />
+          <>
+            <div className={"header__section__toggle"}>
+              <span style={{ fontSize: "12px", marginRight: "8px" }}>Show Transitions</span>
+              <Switch
+                checked={showTransitions}
+                onChange={onToggleTransitions}
+                size="small"
+              />
+            </div>
+            <img
+              className={"header__section__img"}
+              width={24}
+              height={24}
+              src={grid}
+              alt="place"
+              title={"View"}
+              onClick={() => handleChangeView("grid")}
+            />
+          </>
         ) : (
           <img
             className={"header__section__img"}

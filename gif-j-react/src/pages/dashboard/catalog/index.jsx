@@ -25,6 +25,7 @@ export const Catalog = () => {
   const dispatch = useDispatch();
 
   const { folderItem, imageLoading } = useSelector(FoldersSelector);
+  const [showTransitions, setShowTransitions] = React.useState(false);
 
   React.useEffect(() => {
     if (folderItem?.justCreated) {
@@ -48,9 +49,15 @@ export const Catalog = () => {
         <div className={"catalog"}>
           <h3>Your Gifs</h3>
           <div className={"catalog__wrapper"}>
-            <CatalogHeader />
+            <CatalogHeader 
+              showTransitions={showTransitions}
+              onToggleTransitions={setShowTransitions}
+            />
 
-            <UploadSection />
+            <UploadSection 
+              showTransitions={showTransitions}
+              onToggleTransitions={setShowTransitions}
+            />
 
             <Button
               danger
