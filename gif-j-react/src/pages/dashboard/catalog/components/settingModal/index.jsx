@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FoldersSelector, UserInfo } from "../../../../../store/selectors";
 import axiosInstance from "../../../../../helpers/axiosConfig";
 import { collections, file } from "../../../../../static/api";
-import { SetFolder, setImages, getFoldersImages } from "../../../../../store/slices/foldersSlice";
+import { SetFolder, getFoldersImages } from "../../../../../store/slices/foldersSlice";
 import { modalSelector } from "../../../store/selector/modalSelector";
 import {
   settingsClosed,
