@@ -41,14 +41,29 @@ Once you find the directory, navigate to it. Common locations might be:
 - `/var/www/gifalot/gif-j-backend`
 - Or wherever you originally cloned the repository
 
-### Step 2: Navigate to Backend Directory
+### Step 2: Find the Docker Container and Working Directory
 
 ```bash
-# Replace with the actual path you found
+# List running Docker containers to find the backend
+docker ps
+
+# Get more details about the backend container (replace with actual container name)
+docker inspect <container-name> | grep -i "workingdir\|source"
+
+# Or check docker-compose location
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+```
+
+### Step 3: Navigate to Backend Directory
+
+Once you find where the docker-compose.yml file is located:
+
+```bash
+# Navigate to the directory containing docker-compose.yml
 cd /path/to/gif-j-backend
 ```
 
-### Step 3: Pull Latest Code from Dev Branch
+### Step 4: Pull Latest Code from Dev Branch
 
 ```bash
 # Fetch latest changes
@@ -61,34 +76,34 @@ git checkout dev
 git pull origin dev
 ```
 
-### Step 4: Install Dependencies (if any new ones were added)
+### Step 5: Rebuild and Restart Docker Container
 
 ```bash
-npm install
+# Rebuild the container with latest code and restart
+docker compose up -d --build app
+
+# Or if using docker-compose (older syntax)
+docker-compose up -d --build app
 ```
 
-### Step 5: Rebuild the Application
+This will:
+- Rebuild the Docker image with the latest code
+- Restart the backend container
+- Keep other services (MySQL, Redis) running
 
-```bash
-npm run build
-```
-
-### Step 6: Restart the Backend with PM2
-
-```bash
-pm2 restart gifalot-backend
-```
-
-### Step 7: Verify the Update
+### Step 6: Verify the Update
 
 Check that the backend restarted successfully:
 
 ```bash
-# Check PM2 status
-pm2 status
+# Check container status
+docker ps
 
 # View recent logs to ensure no errors
-pm2 logs gifalot-backend --lines 50
+docker logs <container-name> --tail 50
+
+# Or if using docker-compose
+docker compose logs app --tail 50
 ```
 
 You should see the backend restart and start serving requests. The template field should now be accepted.
@@ -114,10 +129,9 @@ Make sure these lines exist (after line 28, after the rotation field):
   public template?: string;
 ```
 
-Then rebuild and restart:
+Then rebuild and restart the Docker container:
 ```bash
-npm run build
-pm2 restart gifalot-backend
+docker compose up -d --build app
 ```
 
 ## Verify the Fix
