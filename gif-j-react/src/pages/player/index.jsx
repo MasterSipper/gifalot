@@ -216,7 +216,7 @@ export const Player = () => {
       slides++;
     }
     return slides;
-  }, [isPublic, state, folderImages, catalogData, folderItem]);
+  }, [isPublic, state, folderImages]);
 
   // Auto-advance slides
   React.useEffect(() => {
