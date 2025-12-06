@@ -14,19 +14,25 @@ You're already logged in as root on the VPS. Follow these steps:
 First, let's locate where the backend is installed:
 
 ```bash
-# Check PM2 processes to see the working directory
-pm2 list
-
-# Or check PM2 info for the backend process
-pm2 info gifalot-backend
-
-# Alternative: Search for the backend directory
+# Search for the backend directory
 find / -type d -name "gif-j-backend" 2>/dev/null
 
 # Or check common locations
 ls -la /opt/
 ls -la /home/root/
 ls -la /var/www/
+
+# Check if it's running as a systemd service
+systemctl list-units | grep -i gif
+systemctl list-units | grep -i backend
+
+# Check if it's running in Docker
+docker ps | grep -i gif
+docker ps | grep -i backend
+
+# Check running Node processes
+ps aux | grep node
+ps aux | grep nest
 ```
 
 Once you find the directory, navigate to it. Common locations might be:
