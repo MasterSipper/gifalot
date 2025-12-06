@@ -3,8 +3,8 @@ import { InputNumber, Modal, Select } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { FoldersSelector } from "../../../../../store/selectors";
 import axiosInstance from "../../../../../helpers/axiosConfig";
-import { collections } from "../../../../../static/api";
-import { SetFolder } from "../../../../../store/slices/foldersSlice";
+import { collections, file } from "../../../../../static/api";
+import { SetFolder, setImages } from "../../../../../store/slices/foldersSlice";
 import { modalSelector } from "../../../store/selector/modalSelector";
 import {
   settingsClosed,
@@ -20,7 +20,7 @@ import "./style.css";
 export const SettingModal = () => {
   const dispatch = useDispatch();
 
-  const { folderItem } = useSelector(FoldersSelector);
+  const { folderItem, folderImages } = useSelector(FoldersSelector);
   const { settings } = useSelector(modalSelector);
 
   const initialSeconds = folderItem?.timePerSlide / 1000;
@@ -57,16 +57,35 @@ export const SettingModal = () => {
 
   const handleCancel = async () => {
     if (seconds !== initialSeconds || animation !== initialAnimation || template !== initialTemplate) {
+      // Update collection settings (timePerSlide and transitionType)
       await axiosInstance.patch(`${collections}/${folderItem.id}`, {
         timePerSlide: seconds * 1000,
         transitionType: animation,
-        template: template,
       });
+      
+      // Update template for all files in the collection
+      if (template !== initialTemplate && folderImages && folderImages.length > 0) {
+        // Update all files with the new template
+        const updatePromises = folderImages.map((fileItem) =>
+          axiosInstance.patch(`${file}/${fileItem.id}`, {
+            template: template,
+          })
+        );
+        
+        await Promise.all(updatePromises);
+        
+        // Update local state
+        const updatedImages = folderImages.map((item) => ({
+          ...item,
+          template: template,
+        }));
+        dispatch(setImages(updatedImages));
+      }
+      
       const item = {
         ...folderItem,
         timePerSlide: seconds * 1000,
         transitionType: animation,
-        template: template,
       };
       dispatch(SetFolder(item));
     }
