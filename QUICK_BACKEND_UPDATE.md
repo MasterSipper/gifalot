@@ -101,18 +101,31 @@ GitHub no longer accepts passwords. You'll need a Personal Access Token:
 2. Generate a new token with `repo` permissions
 3. Use the token as the password when prompted
 
-**Option C: Pull with the commands**
+**Option C: Troubleshoot Authentication Issues**
+
+If you're still getting authentication errors after using a token:
 
 ```bash
-# Fetch latest changes
-git fetch origin
+# 1. Clear any cached credentials
+git credential-cache exit
+git config --global --unset credential.helper
 
-# Switch to dev branch (if not already on it)
-git checkout dev
+# 2. Verify the remote URL is correct
+git remote -v
 
-# Pull latest code (will prompt for credentials if needed)
+# 3. Try using the token directly in the URL (replace YOUR_TOKEN with actual token)
+git pull https://YOUR_TOKEN@github.com/MasterSipper/gifalot.git dev
+
+# 4. Or set up credential helper to store the token
+git config credential.helper store
+# Then when prompted, username: MasterSipper, password: YOUR_TOKEN
+
+# 5. Alternative: Use SSH if you have SSH keys set up
+git remote set-url origin git@github.com:MasterSipper/gifalot.git
 git pull origin dev
 ```
+
+**Important:** Make sure your Personal Access Token has the `repo` scope enabled.
 
 **Option D: If you have SSH keys set up, switch to SSH remote**
 
