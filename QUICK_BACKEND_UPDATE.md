@@ -73,16 +73,26 @@ git config --global --add safe.directory /home/ansible/services/dev/gif-j-backen
 
 If git asks for credentials, you have a few options:
 
-**Option A: Check the remote URL (if it's HTTPS, you may need credentials)**
+**Option A: Check and Fix the Remote URL**
+
+The remote might be pointing to the wrong repository. First check:
 
 ```bash
 # Check current remote URL
 git remote -v
-
-# If it shows HTTPS and you need to authenticate, you can:
-# 1. Use a personal access token (recommended)
-# 2. Or switch to SSH if you have SSH keys set up
 ```
+
+If it shows the wrong repository (like `Perlzx/gif-j-backend`), update it:
+
+```bash
+# Update to the correct repository
+git remote set-url origin https://github.com/MasterSipper/gifalot.git
+
+# Verify it's correct
+git remote -v
+```
+
+**Note:** If the repository is public, you might not need authentication. If it's private, you'll need a Personal Access Token or SSH keys.
 
 **Option B: If using HTTPS and need credentials**
 
