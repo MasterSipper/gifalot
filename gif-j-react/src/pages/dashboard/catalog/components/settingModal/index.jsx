@@ -84,12 +84,24 @@ export const SettingModal = () => {
       // Update template for all files in the collection
       if (template !== initialTemplate && folderImages && folderImages.length > 0) {
         try {
+          // Validate template value before sending
+          if (!template || typeof template !== 'string' || template.length === 0) {
+            console.error('Invalid template value:', template);
+            throw new Error('Invalid template value');
+          }
+          
           // Update all files with the new template
-          const updatePromises = folderImages.map((fileItem) =>
-            axiosInstance.patch(`${file}/${fileItem.id}`, {
-              template: template,
-            })
-          );
+          const updatePromises = folderImages.map(async (fileItem) => {
+            try {
+              const response = await axiosInstance.patch(`${file}/${fileItem.id}`, {
+                template: template,
+              });
+              return response;
+            } catch (error) {
+              console.error(`Error updating file ${fileItem.id}:`, error.response?.data || error.message);
+              throw error;
+            }
+          });
           
           await Promise.all(updatePromises);
           
@@ -99,7 +111,8 @@ export const SettingModal = () => {
           }
         } catch (error) {
           console.error('Error updating file templates:', error);
-          // Still close the modal even if there's an error
+          console.error('Error details:', error.response?.data || error.message);
+          // Still close the modal even if there's an error, but log it
         }
       }
       
