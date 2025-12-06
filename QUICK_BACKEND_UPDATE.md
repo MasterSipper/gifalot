@@ -60,7 +60,16 @@ docker inspect <container-name> | grep -i "workingdir\|source"
 docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
 ```
 
-### Step 4: Pull Latest Code from Dev Branch
+### Step 4: Fix Git Ownership Issue (if needed)
+
+If you get "dubious ownership" errors because the directory is owned by a different user:
+
+```bash
+# Add the directory as a safe directory for git
+git config --global --add safe.directory /home/ansible/services/dev/gif-j-backend
+```
+
+### Step 5: Pull Latest Code from Dev Branch
 
 ```bash
 # Fetch latest changes
@@ -73,22 +82,29 @@ git checkout dev
 git pull origin dev
 ```
 
-### Step 5: Rebuild and Restart Docker Container
+### Step 6: Rebuild and Restart Docker Container
+
+Try these commands in order (use whichever works):
 
 ```bash
-# Rebuild the container with latest code and restart
+# Option 1: Try docker-compose (with hyphen) - most common
+docker-compose up -d --build app
+
+# Option 2: If that doesn't work, try docker compose (newer syntax)
 docker compose up -d --build app
 
-# Or if using docker-compose (older syntax)
-docker-compose up -d --build app
+# Option 3: If you need to specify the compose file explicitly
+docker-compose -f docker-compose.yml up -d --build app
 ```
+
+**Note:** The `-d` flag runs in detached mode (background), `--build` rebuilds the image, and `app` specifies which service to rebuild.
 
 This will:
 - Rebuild the Docker image with the latest code
 - Restart the backend container
 - Keep other services (MySQL, Redis) running
 
-### Step 6: Verify the Update
+### Step 7: Verify the Update
 
 Check that the backend restarted successfully:
 
