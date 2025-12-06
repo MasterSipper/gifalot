@@ -71,6 +71,28 @@ git config --global --add safe.directory /home/ansible/services/dev/gif-j-backen
 
 ### Step 5: Pull Latest Code from Dev Branch
 
+If git asks for credentials, you have a few options:
+
+**Option A: Check the remote URL (if it's HTTPS, you may need credentials)**
+
+```bash
+# Check current remote URL
+git remote -v
+
+# If it shows HTTPS and you need to authenticate, you can:
+# 1. Use a personal access token (recommended)
+# 2. Or switch to SSH if you have SSH keys set up
+```
+
+**Option B: If using HTTPS and need credentials**
+
+GitHub no longer accepts passwords. You'll need a Personal Access Token:
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Generate a new token with `repo` permissions
+3. Use the token as the password when prompted
+
+**Option C: Pull with the commands**
+
 ```bash
 # Fetch latest changes
 git fetch origin
@@ -78,7 +100,17 @@ git fetch origin
 # Switch to dev branch (if not already on it)
 git checkout dev
 
-# Pull latest code
+# Pull latest code (will prompt for credentials if needed)
+git pull origin dev
+```
+
+**Option D: If you have SSH keys set up, switch to SSH remote**
+
+```bash
+# Change remote to SSH (if you have SSH keys configured)
+git remote set-url origin git@github.com:MasterSipper/gifalot.git
+
+# Then pull
 git pull origin dev
 ```
 
