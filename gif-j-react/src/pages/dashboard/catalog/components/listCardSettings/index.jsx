@@ -24,7 +24,7 @@ import "./style.css";
 export const ListCardSettings = ({ onRemove, card }) => {
   const dispatch = useDispatch();
 
-  const { timePerSlide, transitionType, id, isFavorite, rotation, template, filter } = card;
+  const { timePerSlide, id, isFavorite, rotation, template, filter } = card;
 
   const { folderItem, folderImages } = useSelector(FoldersSelector);
   const { userInfo } = useSelector(UserInfo);

@@ -45,7 +45,7 @@ export const PrivateRoute = ({ children }) => {
     setTimeout(() => {
       setIsChecking(false);
     }, 50);
-  }, [dispatch]);
+  }, [dispatch, isAuth]);
 
   // Update when Redux state changes (in case it updates after rehydration)
   React.useEffect(() => {

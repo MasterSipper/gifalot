@@ -5,7 +5,7 @@ import { routes } from "../../static/routes";
 import { RehydrateAuth } from "../../store/slices/userSlice";
 
 export const RememberMe = ({ children }) => {
-  const { rememberMe, isAuth } = useSelector((state) => state.user);
+  const { isAuth } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   // Rehydrate auth on mount to ensure state is current
