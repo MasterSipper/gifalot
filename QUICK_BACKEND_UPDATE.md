@@ -7,62 +7,72 @@ This is because the running backend doesn't have the latest code that includes t
 
 ## Solution: Update Backend on Server
 
-### Option 1: SSH into Contabo VPS and Update
+You're already logged in as root on the VPS. Follow these steps:
+
+### Step 1: Navigate to Backend Directory
 
 ```bash
-# 1. SSH into your server
-ssh root@your-server-ip
-
-# 2. Navigate to backend directory
-cd /path/to/gif-j-backend
-
-# 3. Pull latest code from dev branch
-git fetch origin
-git checkout dev
-git pull origin dev
-
-# 4. Install any new dependencies
-npm install
-
-# 5. Rebuild the application
-npm run build
-
-# 6. Restart the backend (if using PM2)
-pm2 restart gifalot-backend
-
-# Or if using systemd/docker, restart the service
+cd /opt/gifalot/gif-j-backend
 ```
 
-### Option 2: If Using Docker
+### Step 2: Pull Latest Code from Dev Branch
 
 ```bash
-# SSH into server
-ssh root@your-server-ip
+# Fetch latest changes
+git fetch origin
 
-# Navigate to backend directory
-cd /path/to/gif-j-backend
+# Switch to dev branch (if not already on it)
+git checkout dev
 
 # Pull latest code
 git pull origin dev
-
-# Rebuild and restart Docker container
-docker-compose down
-docker-compose up -d --build
 ```
 
-### Option 3: Manual File Update (Quick Fix)
-
-If you can't do a full deployment right now, you can manually update the DTO file on the server:
+### Step 3: Install Dependencies (if any new ones were added)
 
 ```bash
-# SSH into server
-ssh root@your-server-ip
-
-# Edit the DTO file
-nano /path/to/gif-j-backend/src/modules/file/dto/update.ts
+npm install
 ```
 
-Add these lines after line 28 (after the rotation field):
+### Step 4: Rebuild the Application
+
+```bash
+npm run build
+```
+
+### Step 5: Restart the Backend with PM2
+
+```bash
+pm2 restart gifalot-backend
+```
+
+### Step 6: Verify the Update
+
+Check that the backend restarted successfully:
+
+```bash
+# Check PM2 status
+pm2 status
+
+# View recent logs to ensure no errors
+pm2 logs gifalot-backend --lines 50
+```
+
+You should see the backend restart and start serving requests. The template field should now be accepted.
+
+## Alternative: Manual File Update (If Git Pull Fails)
+
+If for some reason you can't pull from git, you can manually update the DTO file:
+
+```bash
+# Navigate to backend directory
+cd /opt/gifalot/gif-j-backend
+
+# Edit the DTO file
+nano src/modules/file/dto/update.ts
+```
+
+Make sure these lines exist (after line 28, after the rotation field):
 
 ```typescript
   @IsOptional()
