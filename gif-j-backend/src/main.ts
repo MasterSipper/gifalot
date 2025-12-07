@@ -12,15 +12,27 @@ async function bootstrap() {
     : ['http://localhost:3000', 'http://localhost:3001', 'https://gifalot.netlify.app'];
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'recaptcha'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix('gif-j');
 
-  await app.listen(PORT);
-  console.log(`Application is running on: http://localhost:${PORT}/gif-j`);
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`Application is running on: http://0.0.0.0:${PORT}/gif-j`);
 }
 bootstrap();
