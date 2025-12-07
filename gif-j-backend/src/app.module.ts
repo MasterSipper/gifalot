@@ -101,10 +101,12 @@ import { AppController } from './app.controller';
         migrations: [resolve(__dirname, 'migrations/*.{ts,js}')],
         migrationsRun: true,
         extra: {
+          connectionLimit: 10,
           ssl: {
             rejectUnauthorized: false,
           },
         },
+        connectorPackage: 'mysql2',
       }),
     }),
     AuthModule,
