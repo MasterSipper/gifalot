@@ -57,7 +57,8 @@ services:
       JWT_REFRESH_TOKEN_SECRET: '${JWT_REFRESH_TOKEN_SECRET}'
     expose:
       - '${PORT}'
-    # labels: # Removed - using Traefik file provider instead (host networking incompatible with Docker provider)
+    labels:
+      - 'traefik.enable=false'  # Disable Docker provider discovery - using file provider instead
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls=true'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls.certresolver=le'
       # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.path=${PATH_PREFIX}/ping'
