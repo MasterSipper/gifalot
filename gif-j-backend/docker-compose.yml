@@ -31,6 +31,7 @@ services:
     restart: 'always'
     command: --default-authentication-plugin=mysql_native_password
   app:
+    network_mode: "host"  # Use host networking for MySQL IP restriction
     hostname: '${SERVICE_NAME_STAGE}'
     build: '.'
     environment:
@@ -60,17 +61,17 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.${SERVICE_NAME_STAGE}.rule=PathPrefix(`/gif-j`)'
       - 'traefik.http.routers.${SERVICE_NAME_STAGE}.entrypoints=web'
+      - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.server.url=http://172.17.0.1:3333'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls=true'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls.certresolver=le'
       # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.path=${PATH_PREFIX}/ping'
       # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.interval=1s'
-      - 'traefik.docker.network=infrastructure-traefik'
-    networks:
-      - 'gif-j'
-      - 'infrastructure-traefik'
-    depends_on:
-      - 'mysql'
-      - 'redis'
+    # networks: # Commented out - using host networking
+    #   - 'gif-j'
+    #   - 'infrastructure-traefik'
+    # depends_on: # Commented out - using host networking
+    #   - 'mysql'
+    #   - 'redis'
     restart: 'always'
 
 networks:
