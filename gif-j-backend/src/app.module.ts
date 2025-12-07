@@ -100,6 +100,11 @@ import { AppController } from './app.controller';
         entities: [resolve(__dirname, '**/*.entity.{ts,js}')],
         migrations: [resolve(__dirname, 'migrations/*.{ts,js}')],
         migrationsRun: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
       }),
     }),
     AuthModule,
