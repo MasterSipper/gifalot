@@ -1,0 +1,14 @@
+http:
+  routers:
+    backend-dev:
+      rule: "PathPrefix(`/gif-j`)"
+      service: backend-service-dev
+      entryPoints:
+        - web
+  
+  services:
+    backend-service-dev:
+      loadBalancer:
+        servers:
+          - url: "http://38.242.204.63:3333"
+

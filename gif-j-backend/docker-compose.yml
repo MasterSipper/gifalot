@@ -57,11 +57,7 @@ services:
       JWT_REFRESH_TOKEN_SECRET: '${JWT_REFRESH_TOKEN_SECRET}'
     expose:
       - '${PORT}'
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.${SERVICE_NAME_STAGE}.rule=PathPrefix(`/gif-j`)'
-      - 'traefik.http.routers.${SERVICE_NAME_STAGE}.entrypoints=web'
-      - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.server.url=http://38.242.204.63:3333'
+    # labels: # Removed - using Traefik file provider instead (host networking incompatible with Docker provider)
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls=true'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls.certresolver=le'
       # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.path=${PATH_PREFIX}/ping'
