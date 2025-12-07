@@ -61,7 +61,7 @@ services:
       - 'traefik.enable=true'
       - 'traefik.http.routers.${SERVICE_NAME_STAGE}.rule=PathPrefix(`/gif-j`)'
       - 'traefik.http.routers.${SERVICE_NAME_STAGE}.entrypoints=web'
-      - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.server.url=http://172.17.0.1:3333'
+      - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.server.url=http://38.242.204.63:3333'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls=true'
       # - 'traefik.http.routers.${SERVICE_NAME_STAGE}.tls.certresolver=le'
       # - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.healthcheck.path=${PATH_PREFIX}/ping'
