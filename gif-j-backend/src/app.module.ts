@@ -102,6 +102,7 @@ import { AppController } from './app.controller';
         migrationsRun: true,
         extra: {
           connectionLimit: 10,
+          ssl: false,
         },
         connectorPackage: 'mysql2',
       }),
