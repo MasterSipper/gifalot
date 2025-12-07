@@ -1,23 +1,24 @@
 [build]
   base = "gif-j-react"
   publish = "gif-j-react/build"
-  command = "npm install && npm run build"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_VERSION = "9"
+  NPM_FLAGS = "--prefer-offline --no-audit"
 
 # Production context (main branch)
 [context.production]
-  command = "npm install && npm run build"
+  command = "npm ci && npm run build"
 
 # Branch deploys (all branches except main)
 [context.branch-deploy]
-  command = "npm install && npm run build"
+  command = "npm ci && npm run build"
 
 # Deploy previews (pull requests)
 [context.deploy-preview]
-  command = "npm install && npm run build"
+  command = "npm ci && npm run build"
 
 [[redirects]]
   from = "/*"
