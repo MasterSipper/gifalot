@@ -760,11 +760,14 @@ export class FileService {
       );
     } catch (error) {
       console.error('Error getting S3 file URL:', error);
-      // Return fallback URL if S3 fails
+      // Always return fallback URL if S3 fails, don't throw
       if (fallbackUrl) {
+        console.log(`Using fallback URL for key ${key}`);
         return fallbackUrl;
       }
-      throw error;
+      // If no fallback URL, log warning but return null to prevent errors
+      console.warn(`No fallback URL available for key ${key}, S3 access failed`);
+      return null;
     }
   }
 
