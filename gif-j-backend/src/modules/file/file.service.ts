@@ -734,7 +734,7 @@ export class FileService {
     key: string,
     contentDistribution: 'inline' | 'view' | 'download' = 'inline',
     fallbackUrl?: string | null,
-  ) {
+  ): Promise<string | undefined> {
     // For local development without S3, return fallback URL or placeholder
     if (process.env.STAGE === 'local' && (!process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID === 'your-aws-access-key-id')) {
       if (fallbackUrl) {
@@ -756,13 +756,14 @@ export class FileService {
     } catch (error) {
       console.error('Error getting S3 file URL:', error);
       // Always return fallback URL if S3 fails, don't throw
-      if (fallbackUrl) {
+      // Convert null to undefined to match return type
+      if (fallbackUrl != null && fallbackUrl !== '') {
         console.log(`Using fallback URL for key ${key}`);
-        return fallbackUrl;
+        return fallbackUrl; // fallbackUrl is string at this point (checked != null)
       }
-      // If no fallback URL, log warning but return null to prevent errors
+      // If no fallback URL, log warning but return undefined to prevent errors
       console.warn(`No fallback URL available for key ${key}, S3 access failed`);
-      return null;
+      return undefined;
     }
   }
 
