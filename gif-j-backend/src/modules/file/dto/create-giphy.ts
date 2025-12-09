@@ -14,6 +14,6 @@ export class FileCreateGiphyDto {
   @ArrayMinSize(1)
   @ArrayMaxSize(FILE_CONSTANTS.GIPHY_PER_REQUEST)
   @IsString({ each: true })
-  @Length(1, 32, { each: true })
+  @Length(1, 100, { each: true })
   public ids: string[];
 }

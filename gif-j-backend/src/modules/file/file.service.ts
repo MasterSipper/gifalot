@@ -286,10 +286,10 @@ export class FileService {
         throw new BadRequestException('GIPHY_API_KEY is not configured');
       }
 
-      // Validate and clean IDs
+      // Validate and clean IDs (Giphy IDs can be up to 100 characters)
       const cleanedIds = body.ids
         .map((id) => String(id).trim())
-        .filter((id) => id.length > 0 && id.length <= 32);
+        .filter((id) => id.length > 0 && id.length <= 100);
 
       if (cleanedIds.length === 0) {
         throw new BadRequestException('No valid GIF IDs provided');

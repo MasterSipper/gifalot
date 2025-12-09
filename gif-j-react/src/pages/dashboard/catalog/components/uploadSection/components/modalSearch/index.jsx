@@ -189,6 +189,20 @@ export const ModalSearch = () => {
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
         errorMessage = "Request timed out";
         errorDescription = "The request took too long. This can happen with large GIFs. Please try adding fewer GIFs at once or try again.";
+      } else if (error.response?.status === 400) {
+        // Handle validation errors from NestJS
+        const responseData = error.response.data;
+        if (Array.isArray(responseData.message)) {
+          // NestJS validation errors come as an array
+          errorMessage = "Validation error";
+          errorDescription = responseData.message.join(', ');
+        } else if (responseData.message) {
+          errorMessage = responseData.message;
+          errorDescription = responseData.error || error.response.statusText;
+        } else {
+          errorMessage = "Invalid request";
+          errorDescription = "Please check that you've selected valid GIFs and try again.";
+        }
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
         errorDescription = error.response.data.error || error.response.statusText;
