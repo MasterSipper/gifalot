@@ -66,6 +66,12 @@ export class FavoriteService {
 
     return Promise.all(
       favoriteFiles.map(async ({ file, ownerId, createdAt }) => {
+        // Performance optimization: Use originalUrl (Giphy) first if available
+        if (file.originalUrl) {
+          return file.toAPI(file.originalUrl, createdAt);
+        }
+
+        // Fallback to S3 if no originalUrl
         const url = await this.fileService.getFileUrl(
           this.fileService.buildKey(
             file.id,
@@ -109,6 +115,12 @@ export class FavoriteService {
 
     return Promise.all(
       files.map(async (file) => {
+        // Performance optimization: Use originalUrl (Giphy) first if available
+        if (file.originalUrl) {
+          return file.toAPI(file.originalUrl, favorited[file.id]);
+        }
+
+        // Fallback to S3 if no originalUrl
         const url = await this.fileService.getFileUrl(
           this.fileService.buildKey(
             file.id,

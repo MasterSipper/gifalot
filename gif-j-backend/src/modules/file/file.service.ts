@@ -488,15 +488,22 @@ export class FileService {
     return Promise.all(
       files.map(async (raw) => {
         const file = this.fileRepository.create(raw);
+        const originalUrl = file.originalUrl || raw?.originalUrl;
 
+        // Performance optimization: Use originalUrl (Giphy) first if available
+        // This avoids S3 API calls and is faster (direct CDN)
+        // Only use S3 if originalUrl is missing
+        if (originalUrl) {
+          return file.toAPI(originalUrl, raw?.favoriteCreatedAt);
+        }
+
+        // Fallback to S3 if no originalUrl
         const url = await this.getFileUrl(
           this.buildKey(file.id, ownerId, collectionId, file.ext),
           'inline',
-          file.originalUrl || raw?.originalUrl,
+          undefined, // No fallback needed since we already checked originalUrl
         );
-        // If getFileUrl returns null (S3 failed), use originalUrl as fallback
-        const finalUrl = url ?? file.originalUrl ?? raw?.originalUrl ?? undefined;
-        return file.toAPI(finalUrl, raw?.favoriteCreatedAt);
+        return file.toAPI(url, raw?.favoriteCreatedAt);
       }),
     );
   }
@@ -518,14 +525,20 @@ export class FileService {
 
     return Promise.all(
       files.map(async (file) => {
+        // Performance optimization: Use originalUrl (Giphy) first if available
+        // This avoids S3 API calls and is faster (direct CDN)
+        // Only use S3 if originalUrl is missing
+        if (file.originalUrl) {
+          return file.toAPI(file.originalUrl);
+        }
+
+        // Fallback to S3 if no originalUrl
         const url = await this.getFileUrl(
           this.buildKey(file.id, ownerId, collectionId, file.ext),
           'inline',
-          file.originalUrl,
+          undefined, // No fallback needed since we already checked originalUrl
         );
-        // If getFileUrl returns null (S3 failed), use originalUrl as fallback
-        const finalUrl = url ?? file.originalUrl ?? undefined;
-        return file.toAPI(finalUrl);
+        return file.toAPI(url);
       }),
     );
   }
