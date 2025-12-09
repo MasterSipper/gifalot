@@ -757,9 +757,10 @@ export class FileService {
       console.error('Error getting S3 file URL:', error);
       // Always return fallback URL if S3 fails, don't throw
       // Convert null to undefined to match return type
-      if (fallbackUrl != null && fallbackUrl !== '') {
+      const validFallback: string | undefined = fallbackUrl != null && fallbackUrl !== '' ? fallbackUrl : undefined;
+      if (validFallback) {
         console.log(`Using fallback URL for key ${key}`);
-        return fallbackUrl; // fallbackUrl is string at this point (checked != null)
+        return validFallback;
       }
       // If no fallback URL, log warning but return undefined to prevent errors
       console.warn(`No fallback URL available for key ${key}, S3 access failed`);
