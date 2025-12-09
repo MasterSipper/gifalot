@@ -532,7 +532,12 @@ export class FileService {
   }
 
   public async updateFile(userId: number, id: number, body: FileUpdateDto) {
-    if (!Object.keys(body).length) {
+    // Filter out undefined values
+    const updateData = Object.fromEntries(
+      Object.entries(body).filter(([_, value]) => value !== undefined)
+    );
+
+    if (!Object.keys(updateData).length) {
       return;
     }
 
@@ -545,7 +550,7 @@ export class FileService {
     }
 
     try {
-      await this.fileRepository.update(id, body);
+      await this.fileRepository.update(id, updateData);
       // Reload the file to get updated values
       const updatedFile = await this.fileRepository.findOne({
         where: { id },
