@@ -47,6 +47,16 @@ export class CollectionController {
     return this.collectionService.listPublicCollection(query?.date);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id')
+  public async getCollection(
+    @UserParam('id') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const collection = await this.collectionService.getCollection(userId, id);
+    return collection.toAPI();
+  }
+
   @UseGuards(OptionalJwtAccessAuthGuard)
   @Get(':ownerId/:id')
   public async getPublicCollection(
