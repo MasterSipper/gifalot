@@ -5,6 +5,7 @@ import { useFavorite } from "../../pages/favourite/hooks/useFavorite";
 import { settingsItemOpen } from "../../pages/dashboard/store/modalSlice/modalSlice";
 import { useDispatch } from "react-redux";
 import { getFolderImage } from "../../store/slices/foldersSlice";
+import { getRandomGif } from "../../helpers/getRandomGif";
 
 import addFav from "../../pages/dashboard/assets/icons/hurt_add.png";
 import asFav from "../../assets/icons/hurt_fav.png";
@@ -22,6 +23,9 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
   const [isHovered, setIsHovered] = React.useState(false);
   const [addToFav, setAddToFav] = React.useState(isFavorite);
   const [mask, setMask] = React.useState(false);
+  
+  // Validate URL - use placeholder if invalid
+  const validUrl = url && typeof url === 'string' && url.trim() !== '' ? url : getRandomGif();
 
   const maskOpen = () => {
     setMask(true);
@@ -57,7 +61,7 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
     >
       {isVideo ? (
         <video
-          src={url}
+          src={validUrl}
           className={"image_card__img"}
           style={{
             opacity: isHovered ? "0.2" : "1",
@@ -81,7 +85,7 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
         />
       ) : (
         <img
-          src={url}
+          src={validUrl}
           alt={name}
           className={"image_card__img"}
           style={{
@@ -98,6 +102,12 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
               img.classList.add('image_card__img--portrait');
             } else {
               img.classList.add('image_card__img--square');
+            }
+          }}
+          onError={(e) => {
+            // If image fails to load, use placeholder
+            if (e.target.src !== getRandomGif()) {
+              e.target.src = getRandomGif();
             }
           }}
         />
@@ -148,7 +158,7 @@ export const ImageCard = ({ item, onRemove, inCatalog, inMostFav, inFav }) => {
       {mask && (
         <ImageMask
           close={maskClose}
-          url={url}
+          url={validUrl}
           name={name}
           id={id}
           deg={rotation}
