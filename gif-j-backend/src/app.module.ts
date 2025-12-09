@@ -39,7 +39,7 @@ import { AppController } from './app.controller';
     }),
     ThrottlerModule.forRoot({
       ttl: 60, // 1 minute window
-      limit: 100, // 100 requests per minute
+      limit: 1000, // 1000 requests per minute (very high for development)
     }),
     AwsSdkModule.register({
       isGlobal: true,
