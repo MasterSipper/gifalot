@@ -489,19 +489,14 @@ export class FileService {
       files.map(async (raw) => {
         const file = this.fileRepository.create(raw);
 
-        try {
-          const url = await this.getFileUrl(
-            this.buildKey(file.id, ownerId, collectionId, file.ext),
-            'inline',
-            file.originalUrl || raw?.originalUrl,
-          );
-          return file.toAPI(url, raw?.favoriteCreatedAt);
-        } catch (error) {
-          console.error(`Error getting file URL for file ${file.id}, using original URL:`, error);
-          // Fallback to original URL if S3 fails
-          const fallbackUrl = file.originalUrl || raw?.originalUrl || null;
-          return file.toAPI(fallbackUrl ?? undefined, raw?.favoriteCreatedAt);
-        }
+        const url = await this.getFileUrl(
+          this.buildKey(file.id, ownerId, collectionId, file.ext),
+          'inline',
+          file.originalUrl || raw?.originalUrl,
+        );
+        // If getFileUrl returns null (S3 failed), use originalUrl as fallback
+        const finalUrl = url ?? file.originalUrl ?? raw?.originalUrl ?? undefined;
+        return file.toAPI(finalUrl, raw?.favoriteCreatedAt);
       }),
     );
   }
@@ -525,8 +520,12 @@ export class FileService {
       files.map(async (file) => {
         const url = await this.getFileUrl(
           this.buildKey(file.id, ownerId, collectionId, file.ext),
+          'inline',
+          file.originalUrl,
         );
-        return file.toAPI(url);
+        // If getFileUrl returns null (S3 failed), use originalUrl as fallback
+        const finalUrl = url ?? file.originalUrl ?? undefined;
+        return file.toAPI(finalUrl);
       }),
     );
   }
@@ -562,15 +561,11 @@ export class FileService {
       }
 
       // Get file URL and return in API format
-      try {
-        const key = this.buildKey(updatedFile.id, userId, updatedFile.collectionId, updatedFile.ext);
-        const url = await this.getFileUrl(key, 'inline', updatedFile.originalUrl);
-        return updatedFile.toAPI(url);
-      } catch (error) {
-        console.error(`Error getting file URL for file ${updatedFile.id}, using original URL:`, error);
-        const fallbackUrl = updatedFile.originalUrl || null;
-        return updatedFile.toAPI(fallbackUrl ?? undefined);
-      }
+      const key = this.buildKey(updatedFile.id, userId, updatedFile.collectionId, updatedFile.ext);
+      const url = await this.getFileUrl(key, 'inline', updatedFile.originalUrl);
+      // If getFileUrl returns null (S3 failed), use originalUrl as fallback
+      const finalUrl = url ?? updatedFile.originalUrl ?? undefined;
+      return updatedFile.toAPI(finalUrl);
     } catch (error) {
       console.error('Error updating file:', error);
       throw new BadRequestException(`Failed to update file: ${error.message}`);
