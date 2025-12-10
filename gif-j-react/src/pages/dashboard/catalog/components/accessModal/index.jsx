@@ -23,9 +23,9 @@ export const AccessModal = () => {
 
   // Get the public URL for sharing
   const getPublicUrl = () => {
-    // Use public URL from env if set, otherwise default to Netlify URL
-    // This allows sharing links that work on other computers even in development
-    const publicUrl = process.env.REACT_APP_PUBLIC_URL || 'https://gifalot.netlify.app';
+    // Use public URL from env if set, otherwise use current origin
+    // This ensures sharing links work on the current domain (dev.gifalot.com)
+    const publicUrl = process.env.REACT_APP_PUBLIC_URL || window.location.origin;
     return `${publicUrl}/#/${userInfo.id}/${folderItem.id}/carousel`;
   };
 
