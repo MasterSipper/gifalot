@@ -155,45 +155,56 @@ export class CollectionService {
     ownerId: number,
     id: number,
   ) {
-    // Query collection directly by ID and ownerId (don't use getCollection which requires user relationship)
-    const collection = await this.collectionRepository.findOne({
-      where: { id, userId: ownerId },
-    });
-    
-    if (!collection) {
-      throw new NotFoundException(ErrorCodes.COLLECTION_NOT_FOUND);
-    }
-
-    // Check if collection is private and user is not the owner
-    if (userId !== ownerId && collection.private) {
-      throw new ForbiddenException(ErrorCodes.COLLECTION_IS_PRIVATE);
-    }
-
-    if (collection.ranks?.length) {
-      collection.ranks = collection.ranks.map(Number);
-    }
-
-    if (!collection.coverImageKey) {
-      return collection.toAPI();
-    }
-
     try {
-      // Try to get the first file's original URL as fallback
-      const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
-      const fallbackUrl = firstFile?.originalUrl || null;
+      // Query collection directly by ID and ownerId (don't use getCollection which requires user relationship)
+      const collection = await this.collectionRepository.findOne({
+        where: { id, userId: ownerId },
+      });
       
-      const url = await this.fileService.getFileUrl(
-        collection.coverImageKey,
-        'inline',
-        fallbackUrl,
-      );
-      return collection.toAPI(url);
+      if (!collection) {
+        throw new NotFoundException(ErrorCodes.COLLECTION_NOT_FOUND);
+      }
+
+      // Check if collection is private and user is not the owner
+      if (userId !== ownerId && collection.private) {
+        throw new ForbiddenException(ErrorCodes.COLLECTION_IS_PRIVATE);
+      }
+
+      if (collection.ranks?.length) {
+        collection.ranks = collection.ranks.map(Number);
+      }
+
+      if (!collection.coverImageKey) {
+        return collection.toAPI();
+      }
+
+      try {
+        // Try to get the first file's original URL as fallback
+        const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+        const fallbackUrl = firstFile?.originalUrl || null;
+        
+        const url = await this.fileService.getFileUrl(
+          collection.coverImageKey,
+          'inline',
+          fallbackUrl,
+        );
+        return collection.toAPI(url);
+      } catch (error) {
+        console.error(`Error getting cover image URL for collection ${collection.id}:`, error);
+        // Try to get original URL from first file
+        const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
+        const fallbackUrl = firstFile?.originalUrl || null;
+        return collection.toAPI(fallbackUrl ?? undefined);
+      }
     } catch (error) {
-      console.error(`Error getting cover image URL for collection ${collection.id}:`, error);
-      // Try to get original URL from first file
-      const firstFile = await this.fileService.getFirstFileInCollection(collection.id);
-      const fallbackUrl = firstFile?.originalUrl || null;
-      return collection.toAPI(fallbackUrl ?? undefined);
+      // Log the full error for debugging
+      console.error(`Error in getPublicCollection for ownerId=${ownerId}, id=${id}, userId=${userId}:`, error);
+      // Re-throw if it's already a known exception
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      // Otherwise, wrap in a generic error
+      throw new BadRequestException(`Failed to retrieve collection: ${error.message}`);
     }
   }
 

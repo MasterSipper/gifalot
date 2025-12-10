@@ -256,13 +256,15 @@ export const Player = () => {
     const timer = setTimeout(() => {
       if (carouselRef.current && play && state.length > 0) {
         const nextIndex = (slideIndex + 1) % totalSlides;
-        // Move carousel first, then update state
-        // This ensures the carousel actually moves
-        if (carouselRef.current.moveTo) {
-          carouselRef.current.moveTo(nextIndex);
-        }
-        // Update state after moving
+        // Update state first, then move carousel
+        // The onChange handler will also fire, but that's okay
         setSlideIndex(nextIndex);
+        // Use a small delay to ensure state update is processed
+        setTimeout(() => {
+          if (carouselRef.current && play) {
+            carouselRef.current.moveTo(nextIndex);
+          }
+        }, 50);
       }
     }, duration);
 
@@ -592,11 +594,9 @@ export const Player = () => {
         showStatus={false}
         showArrows={false}
         onChange={(index) => {
-          // Only update if not auto-advancing (to prevent conflicts with timer)
-          // The timer will update slideIndex directly when play is true
-          if (!play) {
-            setSlideIndex(index);
-          }
+          // Always update slideIndex when carousel changes
+          // This ensures state stays in sync with carousel position
+          setSlideIndex(index);
         }}
         selectedItem={slideIndex}
         key={`carousel-${state.length}-${play}`} // Force re-render when play starts
