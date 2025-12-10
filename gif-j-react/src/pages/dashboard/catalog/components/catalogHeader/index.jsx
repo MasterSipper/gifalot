@@ -134,12 +134,50 @@ export const CatalogHeader = ({ showTransitions, onToggleTransitions }) => {
           />
         )}
         {folderItem?.private ? (
-          <img src={lock} className={"header__section__private"} alt="lock" />
+          <img 
+            src={lock} 
+            className={"header__section__private"} 
+            alt="lock"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await axiosInstance.patch(`${collections}/${folderItem.id}`, {
+                  private: false,
+                });
+                const item = {
+                  ...folderItem,
+                  private: false,
+                };
+                dispatch(SetFolder(item));
+              } catch (error) {
+                console.error('Error making compilation public:', error);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+            title="Click to make public"
+          />
         ) : (
           <img
             src={unlock}
             className={"header__section__private"}
             alt="unlock"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await axiosInstance.patch(`${collections}/${folderItem.id}`, {
+                  private: true,
+                });
+                const item = {
+                  ...folderItem,
+                  private: true,
+                };
+                dispatch(SetFolder(item));
+              } catch (error) {
+                console.error('Error making compilation private:', error);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+            title="Click to make private"
           />
         )}
         <img

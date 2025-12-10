@@ -256,16 +256,13 @@ export const Player = () => {
     const timer = setTimeout(() => {
       if (carouselRef.current && play && state.length > 0) {
         const nextIndex = (slideIndex + 1) % totalSlides;
-        // Update slideIndex first, then move carousel
-        // This ensures the carousel reflects the new index
+        // Move carousel first, then update state
+        // This ensures the carousel actually moves
+        if (carouselRef.current.moveTo) {
+          carouselRef.current.moveTo(nextIndex);
+        }
+        // Update state after moving
         setSlideIndex(nextIndex);
-        // Use carousel's method to actually move to next slide
-        // Small delay to ensure state update is processed
-        setTimeout(() => {
-          if (carouselRef.current && play) {
-            carouselRef.current.moveTo(nextIndex);
-          }
-        }, 10);
       }
     }, duration);
 

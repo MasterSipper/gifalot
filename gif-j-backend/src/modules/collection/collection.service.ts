@@ -155,9 +155,22 @@ export class CollectionService {
     ownerId: number,
     id: number,
   ) {
-    const collection = await this.getCollection(ownerId, id);
+    // Query collection directly by ID and ownerId (don't use getCollection which requires user relationship)
+    const collection = await this.collectionRepository.findOne({
+      where: { id, userId: ownerId },
+    });
+    
+    if (!collection) {
+      throw new NotFoundException(ErrorCodes.COLLECTION_NOT_FOUND);
+    }
+
+    // Check if collection is private and user is not the owner
     if (userId !== ownerId && collection.private) {
       throw new ForbiddenException(ErrorCodes.COLLECTION_IS_PRIVATE);
+    }
+
+    if (collection.ranks?.length) {
+      collection.ranks = collection.ranks.map(Number);
     }
 
     if (!collection.coverImageKey) {

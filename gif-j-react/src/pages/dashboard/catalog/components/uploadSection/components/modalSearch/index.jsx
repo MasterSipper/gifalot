@@ -31,6 +31,24 @@ export const ModalSearch = () => {
   const [selectedRatings, setSelectedRatings] = React.useState(['g', 'pg', 'pg-13', 'r']); // All ratings selected by default
   const [selectedOrientation, setSelectedOrientation] = React.useState('all'); // 'all', 'landscape', 'portrait', 'square'
 
+  // When modal opens, use compilation name as search term and trigger search
+  React.useEffect(() => {
+    if (search && folderItem?.name) {
+      // Set the search value to compilation name
+      setSearchValue(folderItem.name);
+      // Update form fields to show the compilation name
+      const updatedFields = searchFormFields.map(field => 
+        Array.isArray(field.name) && field.name[0] === 'search' 
+          ? { ...field, value: folderItem.name } 
+          : field
+      );
+      setFields(updatedFields);
+      // Trigger search automatically
+      fetchGifs(0, folderItem.name, selectedRatings, selectedOrientation);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, folderItem?.name]);
+
   const fetchGifs = (page, search, ratings = selectedRatings, orientation = selectedOrientation) => {
     const condition = search === undefined ? searchValue : search;
     
