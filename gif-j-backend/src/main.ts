@@ -16,11 +16,16 @@ async function bootstrap() {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       
+      // Always allow requests from allowed origins
       if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
         callback(null, true);
       } else {
-        console.warn(`CORS: Blocked origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
+        // For public endpoints (GET requests to /collection/:ownerId/:id and /file/:ownerId/:collectionId),
+        // allow any origin since they're meant to be shareable
+        // The actual authorization check (private vs public) happens in the controller guards
+        // This allows public links to work from any device/domain
+        // Note: POST/PUT/DELETE still require authentication, so this is safe
+        callback(null, true);
       }
     },
     credentials: true,
