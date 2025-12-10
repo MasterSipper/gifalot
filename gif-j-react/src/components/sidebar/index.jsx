@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { sidebarItems } from "../../static/sibarItems";
 import { logOut } from "../../store/slices/userSlice";
 import { apiUrl } from "../../static/api";
+import { getVersion } from "../../helpers/version";
 
 import logo from "../../assets/logo/logo.png";
 
@@ -90,6 +91,16 @@ export const Sidebar = () => {
         </div>
       </div>
       <div className={"sidebar__buttons"}>
+        <div style={{ 
+          padding: "10px", 
+          textAlign: "center", 
+          fontSize: "11px", 
+          color: "#8c8c8c",
+          borderTop: "1px solid #f0f0f0",
+          marginTop: "10px"
+        }}>
+          {getVersion()}
+        </div>
         <Button type="text" onClick={logOutUser}>
           Log out
         </Button>

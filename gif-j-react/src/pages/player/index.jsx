@@ -16,6 +16,7 @@ import { routes } from "../../static/routes";
 import { PlayerModal } from "./components/playerModal";
 import { PrivateErrorModal } from "./components/privateErrorModal";
 import { ErrorModal } from "./components/errorModal";
+import { getVersion } from "../../helpers/version";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import "../dashboard/carousel/style.css";
@@ -69,7 +70,9 @@ export const Player = () => {
     const folderIdNum = parseInt(params.folderId, 10);
     
     if (isNaN(userIdNum) || isNaN(folderIdNum)) {
-      console.log("Invalid route parameters - userId and folderId must be numbers");
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Invalid route parameters - userId and folderId must be numbers");
+      }
       setError(true);
       setIsPrivateError(false);
       setLoading(false);
@@ -92,31 +95,28 @@ export const Player = () => {
       setError(false);
       setIsPrivateError(false);
     } catch (err) {
-      // Enhanced error logging for debugging
-      console.log("=== Public Collection Access Error ===");
-      console.log("API URL:", `${apiUrl}${collections}/${userIdNum}/${folderIdNum}`);
-      console.log("Error:", err);
-      console.log("Error response:", err.response);
-      console.log("Error status:", err.response?.status);
-      console.log("Error data:", err.response?.data);
-      console.log("Error message:", err.message);
-      
-      // Check if it's a private compilation error
-      // NestJS ForbiddenException typically returns:
-      // { statusCode: 403, message: "...", error: "Forbidden" }
-      // The error code 'COLLECTION_IS_PRIVATE' may be in the message or error field
+      // Error logging - keep minimal for production
       const errorData = err.response?.data || {};
       const statusCode = err.response?.status || errorData.statusCode;
       const errorMessage = errorData.message || errorData.error || err.message || '';
       const errorCode = errorData.error || errorData.code || '';
       const errorString = JSON.stringify(errorData).toLowerCase();
       
-      console.log("Parsed error details:", {
-        statusCode,
-        errorMessage,
-        errorCode,
-        errorString: errorString.substring(0, 200) // Truncate for readability
-      });
+      // Enhanced error logging for debugging (development only)
+      if (process.env.NODE_ENV === 'development') {
+        console.log("=== Public Collection Access Error ===");
+        console.log("API URL:", `${apiUrl}${collections}/${userIdNum}/${folderIdNum}`);
+        console.log("Error:", err);
+        console.log("Error response:", err.response);
+        console.log("Error status:", statusCode);
+        console.log("Error data:", errorData);
+        console.log("Parsed error details:", {
+          statusCode,
+          errorMessage,
+          errorCode,
+          errorString: errorString.substring(0, 200)
+        });
+      }
       
       // Check for private compilation error indicators
       // A 403 Forbidden status typically means the compilation is private
@@ -134,14 +134,17 @@ export const Player = () => {
         // Private compilation access denied
         // Show PrivateErrorModal which explains the compilation is private
         // and provides options to create an account
-        console.log("✓ Detected private compilation error - showing PrivateErrorModal");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✓ Detected private compilation error - showing PrivateErrorModal");
+        }
         setIsPrivateError(true);
         setError(false);
       } else {
         // Other errors (404 Not Found, 500 Server Error, network errors, etc.)
         // Show generic ErrorModal
-        console.log("✗ Not a private compilation error - showing generic ErrorModal");
-        console.log("This could be: compilation doesn't exist, server error, or network issue");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✗ Not a private compilation error - showing generic ErrorModal");
+        }
         setError(true);
         setIsPrivateError(false);
       }
@@ -154,15 +157,21 @@ export const Player = () => {
   // Load folder data for private player
   React.useEffect(() => {
     if (isPrivate && params.folder && userInfo?.id) {
-      if (!folderItem || folderItem.id !== params.folder) {
+      // Only load if folderItem is missing or different from current folder
+      // This prevents unnecessary re-fetches when looping
+      const folderId = parseInt(params.folder, 10);
+      if (!folderItem || folderItem.id !== folderId) {
         // Load folder metadata
-        axiosInstance.get(`${collections}/${params.folder}`)
+        axiosInstance.get(`${collections}/${params.folder}`, { timeout: 30000 })
           .then((res) => {
             dispatch(SetFolder(res.data));
           })
           .catch((err) => {
+            // Log error (always log errors, not just in development)
             console.error('Error loading folder:', err);
-            console.log('Private folder error status:', err.response?.status);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Private folder error status:', err.response?.status);
+            }
             // Check if it's a private compilation error
             if (err.response?.status === 403 || err.response?.status === 401) {
               setIsPrivateError(true);
@@ -172,11 +181,13 @@ export const Player = () => {
               setIsPrivateError(false);
             }
           });
-        // Load folder images
-        dispatch(getFoldersImages({ userId: userInfo.id, id: params.folder }));
+        // Load folder images only if we don't already have them
+        if (!folderImages.length || folderItem?.id !== folderId) {
+          dispatch(getFoldersImages({ userId: userInfo.id, id: params.folder }));
+        }
       }
     }
-  }, [isPrivate, params.folder, userInfo?.id, dispatch, folderItem]);
+  }, [isPrivate, params.folder, userInfo?.id, dispatch, folderItem, folderImages.length]);
 
   // Update state when folderImages change (for private player)
   React.useEffect(() => {
@@ -243,10 +254,19 @@ export const Player = () => {
                      5000;
     
     const timer = setTimeout(() => {
-      setSlideIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % totalSlides;
-        return nextIndex;
-      });
+      if (carouselRef.current && play && state.length > 0) {
+        const nextIndex = (slideIndex + 1) % totalSlides;
+        // Update slideIndex first, then move carousel
+        // This ensures the carousel reflects the new index
+        setSlideIndex(nextIndex);
+        // Use carousel's method to actually move to next slide
+        // Small delay to ensure state update is processed
+        setTimeout(() => {
+          if (carouselRef.current && play) {
+            carouselRef.current.moveTo(nextIndex);
+          }
+        }, 10);
+      }
     }, duration);
 
     return () => clearTimeout(timer);
@@ -559,7 +579,7 @@ export const Player = () => {
   return (
     <div className={"carousel__wrapper"} onDoubleClick={handleClose}>
       <div className="carousel__version">
-        <div>v1.0.6</div>
+        <div>{getVersion()}</div>
         <div className="carousel__template">{getCurrentTemplate()}</div>
       </div>
       <Carousel
@@ -575,7 +595,11 @@ export const Player = () => {
         showStatus={false}
         showArrows={false}
         onChange={(index) => {
-          setSlideIndex(index);
+          // Only update if not auto-advancing (to prevent conflicts with timer)
+          // The timer will update slideIndex directly when play is true
+          if (!play) {
+            setSlideIndex(index);
+          }
         }}
         selectedItem={slideIndex}
         key={`carousel-${state.length}-${play}`} // Force re-render when play starts

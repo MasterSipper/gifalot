@@ -26,7 +26,19 @@ export const AccessModal = () => {
     // Use public URL from env if set, otherwise use current origin
     // This ensures sharing links work on the current domain (dev.gifalot.com)
     const publicUrl = process.env.REACT_APP_PUBLIC_URL || window.location.origin;
-    return `${publicUrl}/#/${userInfo.id}/${folderItem.id}/carousel`;
+    const shareUrl = `${publicUrl}/#/${userInfo.id}/${folderItem.id}/carousel`;
+    
+    // Debug log (development only)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Sharing URL:', {
+        publicUrl,
+        envPublicUrl: process.env.REACT_APP_PUBLIC_URL,
+        windowOrigin: window.location.origin,
+        finalUrl: shareUrl
+      });
+    }
+    
+    return shareUrl;
   };
 
   const shareUrl = getPublicUrl();
