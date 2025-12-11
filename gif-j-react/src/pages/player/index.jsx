@@ -44,9 +44,9 @@ export const Player = () => {
   const [catalogData, setCatalogData] = React.useState(null);
   const [isStop, setIsStop] = React.useState(false);
   
-  // Reset slideIndex to 0 when play starts
+  // Reset slideIndex to 0 when play starts or state changes
   React.useEffect(() => {
-    if (play && state.length > 0) {
+    if (state.length > 0) {
       setSlideIndex(0);
       // Force carousel to go to first slide after a brief delay to ensure it's rendered
       setTimeout(() => {
@@ -229,8 +229,42 @@ export const Player = () => {
     return slides;
   }, [isPublic, state, folderImages]);
 
-  // Note: Auto-advance is now handled by the Carousel component's autoPlay prop
-  // The interval is calculated dynamically based on the current slide's timePerSlide
+  // Auto-advance slides with dynamic interval based on each slide's timePerSlide
+  React.useEffect(() => {
+    if (!play || state.length === 0) {
+      return;
+    }
+
+    const totalSlides = calculateTotalSlides();
+    let itemIdx = 0;
+    for (let i = 0; i < slideIndex && itemIdx < state.length; i++) {
+      const item = state[itemIdx];
+      const template = item?.template || "1up";
+      const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
+                       template === "1up" ? 1 : 
+                       template === "2next" ? 2 : 4;
+      itemIdx += advanceBy;
+    }
+    
+    // Get duration from the current item, fallback to folder/catalog default, then 5000ms
+    const currentItem = state[itemIdx];
+    const duration = currentItem?.timePerSlide || 
+                     (isPublic ? catalogData?.timePerSlide : folderItem?.timePerSlide) || 
+                     5000;
+    
+    const timer = setTimeout(() => {
+      if (carouselRef.current && play && state.length > 0) {
+        const nextIndex = (slideIndex + 1) % totalSlides;
+        // Update state and move carousel
+        setSlideIndex(nextIndex);
+        if (carouselRef.current.moveTo) {
+          carouselRef.current.moveTo(nextIndex);
+        }
+      }
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [play, slideIndex, state, catalogData, folderItem, isPublic, calculateTotalSlides]);
 
   React.useEffect(() => {
     if (state.length === 0 && slideIndex !== 0) {
@@ -543,37 +577,22 @@ export const Player = () => {
         <div className="carousel__template">{getCurrentTemplate()}</div>
       </div>
       <Carousel
-        autoPlay={play}
+        autoPlay={false}
         infiniteLoop
         ref={carouselRef}
         useKeyboardArrows={true}
         transitionTime={0}
-        interval={(() => {
-          // Calculate interval based on current slide's timePerSlide
-          if (state.length === 0) return 5000;
-          let itemIdx = 0;
-          for (let i = 0; i < slideIndex && itemIdx < state.length; i++) {
-            const item = state[itemIdx];
-            const template = item?.template || "1up";
-            const advanceBy = template === "2up" || template === "2up-mirror-left" || template === "2up-mirror-right" || template === "4up" || template === "4up-warhol" ? 1 : 
-                             template === "1up" ? 1 : 
-                             template === "2next" ? 2 : 4;
-            itemIdx += advanceBy;
-          }
-          const currentItem = state[itemIdx];
-          return currentItem?.timePerSlide || 
-                 (isPublic ? catalogData?.timePerSlide : folderItem?.timePerSlide) || 
-                 5000;
-        })()}
         swipeable={!isPublic}
         showIndicators={false}
         showThumbs={false}
         showStatus={false}
         showArrows={false}
         onChange={(index) => {
-          // Always update slideIndex when carousel changes
-          // This ensures state stays in sync with carousel position
-          setSlideIndex(index);
+          // Only update if manually changed (not during auto-advance)
+          // Auto-advance will update slideIndex directly
+          if (!play) {
+            setSlideIndex(index);
+          }
         }}
         selectedItem={slideIndex}
       >
