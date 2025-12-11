@@ -24,7 +24,7 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
           inventory: |
             [dev_infrastructure]
-            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible   ansible_python_interpreter=/usr/bin/python3.9
           options: |
             --extra-vars "ansible_sudo_pass=${{ secrets.ANSIBLE_PASSWORD_DEV }}"
 
@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
           inventory: |
             [dev_infrastructure]
-            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible   ansible_python_interpreter=/usr/bin/python3.9
           options: |
             --extra-vars "ansible_sudo_pass=${{ secrets.ANSIBLE_PASSWORD_DEV }}"
 
@@ -46,7 +46,7 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
           inventory: |
             [dev_infrastructure]
-            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible   ansible_python_interpreter=/usr/bin/python3.9
           options: |
             --extra-vars "STAGE=dev"
             --extra-vars "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}"
