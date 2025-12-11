@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render } from '@testing-library/react';
+import { App } from './App';
 
-test('renders learn react link', () => {
+test('renders app without crashing', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  // App renders RouterProvider which handles routing
+  // This test just ensures the app doesn't crash on render
 });

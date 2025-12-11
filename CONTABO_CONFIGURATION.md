@@ -68,3 +68,7 @@ Your Contabo setup is ready! Just add these credentials to your `.env` file.
 
 
 
+
+
+
+

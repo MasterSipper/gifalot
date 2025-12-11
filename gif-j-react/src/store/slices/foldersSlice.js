@@ -30,7 +30,10 @@ export const getFoldersImages = createAsyncThunk(
   "folder/getImages",
   async ({ userId, id }, thunkAPI) => {
     try {
-      const res = await axiosInstance.get(`${file}/${userId}/${id}`);
+      // Increase timeout for file requests (they may take longer with many files)
+      const res = await axiosInstance.get(`${file}/${userId}/${id}`, {
+        timeout: 30000, // 30 seconds
+      });
       return res.data;
     } catch (error) {
       // Extract only serializable error data

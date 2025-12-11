@@ -5,9 +5,7 @@ import "./style.css";
 
 export const ErrorModal = () => {
   const handleCancel = () => {
-    console.log(window.location);
-    let win = window.open(`${window.location.origin}`, "_self");
-    win.close();
+    window.location.href = `${window.location.origin}`;
   };
 
   return (

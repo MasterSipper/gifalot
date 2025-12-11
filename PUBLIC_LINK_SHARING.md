@@ -134,3 +134,7 @@ When someone opens a public link, the frontend calls:
 
 4. **Share the link** - it will use the Netlify URL and work on any computer!
 
+
+
+
+

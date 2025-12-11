@@ -10,22 +10,40 @@ export const login = createAsyncThunk("auth/login", async (data, thunkAPI) => {
   const { remember, email, password, token } = data;
 
   try {
-    // Log login attempt (apiUrl might be empty in production, that's ok)
-    if (process.env.NODE_ENV === 'development') {
-      console.log("[LOGIN] REQUEST:", { email, apiUrl, loginRoute: `${apiUrl}${loginRoute}` });
+    // Always log login attempt details for debugging
+    const requestUrl = `${apiUrl || ''}${loginRoute}`;
+    console.log("[LOGIN] REQUEST:", { 
+      email, 
+      apiUrl: apiUrl || '(empty - using relative URL)', 
+      loginRoute, 
+      fullUrl: requestUrl,
+      hasPassword: !!password,
+      passwordLength: password?.length
+    });
+    
+    const requestBody = {
+      email,
+      password,
+    };
+    
+    console.log("[LOGIN] Request body:", { 
+      email: requestBody.email, 
+      hasPassword: !!requestBody.password,
+      passwordLength: requestBody.password?.length 
+    });
+    
+    // Only send reCAPTCHA header if token is present and not empty
+    // Login endpoint has reCAPTCHA disabled, so we don't need to send it
+    // But we'll send it if provided to avoid breaking if it's re-enabled
+    const requestConfig = {};
+    if (token && token.trim() !== '') {
+      requestConfig.headers = { recaptcha: token };
     }
     
     const res = await axiosInstance.post(
       `${loginRoute}`,
-      {
-        email,
-        password,
-      },
-      {
-        headers: {
-          recaptcha: `${token}`,
-        },
-      }
+      requestBody,
+      requestConfig
     );
 
     // Always log login response for debugging
@@ -46,18 +64,39 @@ export const login = createAsyncThunk("auth/login", async (data, thunkAPI) => {
     
     return result;
   } catch (error) {
+    // CRITICAL: Log the actual response data - this tells us what validation failed
+    const responseData = error.response?.data;
     console.error("[LOGIN] ERROR:", {
       message: error.message,
       response: error.response ? {
         status: error.response.status,
         statusText: error.response.statusText,
-        data: error.response.data
+        data: responseData
       } : null,
       config: error.config ? {
         url: error.config.url,
         method: error.config.method
       } : null
     });
+    
+    // ALWAYS log the response data separately so we can see it
+    if (responseData) {
+      console.error("🔴 BACKEND VALIDATION ERROR:", responseData);
+      console.error("🔴 Error Message:", typeof responseData.message === 'string' 
+        ? responseData.message 
+        : JSON.stringify(responseData.message));
+      if (Array.isArray(responseData.message)) {
+        console.error("🔴 Validation Errors:", responseData.message);
+      }
+      // Log the full object as JSON for easy copying
+      try {
+        console.error("🔴 FULL ERROR JSON:", JSON.stringify(responseData, null, 2));
+      } catch (e) {
+        console.error("🔴 Could not stringify error:", e);
+      }
+    } else {
+      console.error("🔴 NO RESPONSE DATA - Check Network tab for actual response");
+    }
     // Extract only serializable error data
     const errorData = {
       message: error.message,
@@ -265,15 +304,63 @@ export const userSlice = createSlice({
         console.error("❌ LOGIN REJECTED:", payload);
         console.error("❌ Error object:", error);
         
+        // Extract response data for detailed logging
+        const status = error?.response?.status;
+        const responseData = error?.response?.data;
+        
+        // Log the FULL response data object - this is critical for debugging
+        console.error("❌ FULL RESPONSE DATA (JSON):", JSON.stringify(responseData, null, 2));
+        console.error("❌ Response Status:", status);
+        console.error("❌ Response Data (object):", responseData);
+        
+        // Also log the full error response structure
+        if (error?.response) {
+          console.error("❌ Complete Error Response:", {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            headers: error.response.headers,
+            data: error.response.data,
+            config: {
+              url: error.config?.url,
+              method: error.config?.method,
+              baseURL: error.config?.baseURL,
+              data: error.config?.data
+            }
+          });
+        }
+        
         // Show error notification for invalid PIN
         if (error?.response) {
-          const status = error.response.status;
-          const message = error.response.data?.message || error.message || "Invalid PIN";
+          // NestJS validation errors can be in different formats:
+          // Format 1: { message: "error message", statusCode: 400 }
+          // Format 2: { message: ["error1", "error2"], statusCode: 400, error: "Bad Request" }
+          // Format 3: { message: string | string[], error: string, statusCode: number }
+          let message = "An error occurred. Please try again.";
+          
+          if (responseData) {
+            if (Array.isArray(responseData.message)) {
+              // Multiple validation errors
+              message = responseData.message.join(", ");
+            } else if (typeof responseData.message === 'string') {
+              // Single error message
+              message = responseData.message;
+            } else if (responseData.error) {
+              // Error object with error field
+              message = responseData.error;
+            }
+          } else {
+            message = error.message || "Invalid PIN";
+          }
           
           if (status === 401) {
             notification.error({
               message: "Invalid PIN",
               description: "The PIN you entered is incorrect. Please try again.",
+            });
+          } else if (status === 400) {
+            notification.error({
+              message: "Login failed",
+              description: message || "The request was invalid. Please check your email and password format.",
             });
           } else {
             notification.error({
@@ -288,12 +375,35 @@ export const userSlice = createSlice({
           });
         }
         
+        // Detailed error logging
         console.error("❌ Full error details:", {
           payload,
           error,
           errorMessage: error?.message,
-          errorResponse: error?.response
+          errorResponse: error?.response,
+          errorData: responseData,
+          status: status,
+          // NestJS validation errors structure
+          validationErrors: Array.isArray(responseData?.message) 
+            ? responseData.message 
+            : (responseData?.message ? [responseData.message] : []),
+          errorCode: responseData?.statusCode,
+          errorType: responseData?.error
         });
+        
+        // Log the actual validation error message if it's a 400 error
+        if (status === 400 && responseData) {
+          console.error("❌ VALIDATION ERROR (400 Bad Request):", {
+            fullResponse: responseData,
+            message: responseData.message,
+            error: responseData.error,
+            statusCode: responseData.statusCode,
+            // NestJS validation errors are usually in this format
+            validationErrors: Array.isArray(responseData.message) 
+              ? responseData.message 
+              : (responseData.message ? [responseData.message] : [])
+          });
+        }
       } catch (rejectError) {
         console.error("❌❌❌ ERROR IN LOGIN REJECTED HANDLER:", rejectError);
       }

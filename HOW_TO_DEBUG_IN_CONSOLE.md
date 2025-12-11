@@ -115,3 +115,7 @@ Copy this entire block and paste it into the console to see everything at once:
 - **Take screenshots** - Capture the console output to share
 - **Clear storage first** - If testing multiple times, run `sessionStorage.clear()` and `localStorage.clear()` first
 
+
+
+
+

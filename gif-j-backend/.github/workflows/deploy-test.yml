@@ -1,0 +1,90 @@
+name: Deploy TEST
+
+on:
+  push:
+    branches-ignore:
+      - main  # Don't deploy main branch (that's for dev.gifalot.com)
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy (optional, defaults to triggering branch)'
+        required: false
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Run Playbook - Application (TEST)
+        uses: dawidd6/action-ansible-playbook@9c825aa4d5c39496e71448bb7ae16a71f5fc75e1
+        with:
+          playbook: ansible/playbooks/app/main.yml
+          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
+          inventory: |
+            [dev_infrastructure]
+            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+          options: |
+            --extra-vars "STAGE=test"
+            --extra-vars "PORT=3334"
+            --extra-vars "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}"
+            --extra-vars "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_SECRET_DEV }}"
+            --extra-vars "GOOGLE_RECAPTCHA_SECRET_KEY=${{ secrets.GOOGLE_RECAPTCHA_SECRET_KEY_DEV }}"
+            --extra-vars "GIPHY_API_KEY=${{ secrets.GIPHY_API_KEY_DEV }}"
+            --extra-vars "MAIL_USER=${{ secrets.MAIL_USER_DEV }}"
+            --extra-vars "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD_DEV }}"
+            --extra-vars "REDIS_HOST=${{ secrets.REDIS_HOST_DEV }}"
+            --extra-vars "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD_DEV }}"
+            --extra-vars "POSTGRES_HOST=${{ secrets.POSTGRES_HOST_DEV }}"
+            --extra-vars "POSTGRES_DB=${{ secrets.POSTGRES_DB_DEV }}_test"
+            --extra-vars "POSTGRES_USER=${{ secrets.POSTGRES_USER_DEV }}"
+            --extra-vars "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD_DEV }}"
+            --extra-vars "JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET_DEV }}"
+            --extra-vars "JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET_DEV }}"
+            --extra-vars "CORS_ORIGINS=https://dev.gifalot.com,https://test.gifalot.com"
+            --extra-vars "ansible_sudo_pass=${{ secrets.ANSIBLE_PASSWORD_DEV }}"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Frontend Dependencies
+        working-directory: gif-j-react
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: gif-j-react
+        env:
+          REACT_APP_API_URL: https://test.gifalot.com/gif-j/
+        run: npm run build
+
+      - name: Deploy Frontend to Server via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.ANSIBLE_HOST_VPS1_DEV }}
+          port: ${{ secrets.ANSIBLE_PORT_DEV }}
+          username: ansible
+          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
+          source: "gif-j-react/build/*"
+          target: "/var/www/gifalot-frontend-test/"
+          strip_components: 1
+

@@ -209,6 +209,152 @@ After updating, test by:
 2. Setting a template
 3. Checking the browser console - should no longer see 400 errors
 
+## Add GIPHY API Key to .env File
+
+The Giphy search modal requires a GIPHY API key. Add it to your `.env` file:
+
+```bash
+# Navigate to backend directory
+cd /home/ansible/services/dev/gif-j-backend
+
+# Edit the .env file
+nano .env
+```
+
+Find the line:
+```
+GIPHY_API_KEY=
+```
+
+And change it to:
+```
+GIPHY_API_KEY=s3k2WSBRVKYkCsTL60x7ow79geR9aCSq
+```
+
+Save the file (Ctrl+X, Y, Enter), then restart the container:
+
+```bash
+COMPOSE_PROJECT_NAME=services-gif-j-backend-dev docker compose restart app
+```
+
+Or if restart doesn't pick up the changes:
+
+```bash
+COMPOSE_PROJECT_NAME=services-gif-j-backend-dev docker compose down
+COMPOSE_PROJECT_NAME=services-gif-j-backend-dev docker compose up -d
+```
+
+## Fix Redis and MySQL Connection Issues
+
+**IMPORTANT:** Your backend uses **MySQL** (hosted on Simply servers), NOT PostgreSQL!
+
+If you see errors like:
+- `getaddrinfo EAI_AGAIN redis` - Redis hostname not found
+- `SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string` - This error appears if you have `POSTGRES_*` variables in your `.env` file, but you should be using `MYSQL_*` variables instead
+
+### Step 1: Check Docker Service Names and Network
+
+```bash
+# Check all running containers
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+
+# Check the network the containers are on
+docker network ls
+
+# Inspect the postgres container to see its actual hostname
+docker inspect services-gif-j-backend-dev-postgres-1 | grep -A 5 "Hostname"
+
+# Inspect the redis container to see its actual hostname
+docker inspect services-gif-j-backend-dev-redis-1 | grep -A 5 "Hostname"
+
+# Check what network they're on
+docker inspect services-gif-j-backend-dev-postgres-1 | grep -A 10 "Networks"
+docker inspect services-gif-j-backend-dev-redis-1 | grep -A 10 "Networks"
+```
+
+### Step 2: Check Docker Compose File
+
+```bash
+# View the docker-compose.yml to see service names
+cat docker-compose.yml | grep -A 5 "redis:"
+cat docker-compose.yml | grep -A 5 "mysql:"
+```
+
+### Step 3: Update .env File with Correct Configuration
+
+**CRITICAL:** Your backend uses **MySQL** (hosted on Simply servers), NOT PostgreSQL!
+
+Edit your `.env` file:
+
+```bash
+nano .env
+```
+
+**Remove any `POSTGRES_*` variables** and make sure you have these MySQL variables instead:
+
+```env
+# Redis Configuration - use the actual Docker service name
+REDIS_HOST=redis
+# OR if that doesn't work, try the full container name:
+# REDIS_HOST=services-gif-j-backend-dev-redis-1
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password-here
+
+# MySQL Configuration - Your Simply MySQL server (NOT PostgreSQL!)
+MYSQL_HOST=mysql96.unoeuro.com
+MYSQL_PORT=3306
+MYSQL_USER=gifalot_com
+MYSQL_PASSWORD=z6paFtf9D5Eryh4cdwgb
+MYSQL_DB=gifalot_com_db
+```
+
+**Important:** 
+- **DO NOT** use `POSTGRES_*` variables - your backend uses MySQL!
+- The `MYSQL_HOST` should be `mysql96.unoeuro.com` (your Simply MySQL server)
+- The `REDIS_PASSWORD` should match what's configured in the Redis container
+- The `REDIS_HOST` should be `redis` (the Docker service name)
+
+### Step 4: Check Redis Password
+
+```bash
+# Check what password Redis is using
+docker inspect services-gif-j-backend-dev-redis-1 | grep -A 10 "Env" | grep -i password
+# OR check the docker-compose.yml
+cat docker-compose.yml | grep -A 10 "redis:" | grep -i password
+# OR check your .env file
+cat .env | grep REDIS_PASSWORD
+```
+
+### Step 5: Restart Container
+
+After updating `.env`:
+
+```bash
+# Recreate container to pick up new environment variables
+COMPOSE_PROJECT_NAME=services-gif-j-backend-dev docker compose down
+COMPOSE_PROJECT_NAME=services-gif-j-backend-dev docker compose up -d
+
+# Check logs
+sleep 5
+docker logs services-gif-j-backend-dev-app-1 --tail 50
+```
+
+### Step 6: If Still Not Working - Check Network
+
+If the hostnames still don't resolve, check if all containers are on the same network:
+
+```bash
+# Check network
+docker network inspect services-gif-j-backend-dev_default
+
+# Or check what network each container is on
+docker inspect services-gif-j-backend-dev-app-1 | grep -A 20 "Networks"
+docker inspect services-gif-j-backend-dev-postgres-1 | grep -A 20 "Networks"
+docker inspect services-gif-j-backend-dev-redis-1 | grep -A 20 "Networks"
+```
+
+All containers should be on the same network. If they're not, you may need to check your `docker-compose.yml` file.
+
 ## Note
 
 The code in the repository is already correct. This is just a matter of deploying the latest code to your server.

@@ -83,3 +83,6 @@ If you want to test immediately without updating Traefik docker-compose:
 - Updated `gif-j-backend/ansible/playbooks/traefik/docker-compose.yml` - Added file provider
 - Updated `gif-j-backend/docker-compose.yml` - Removed Traefik labels (not needed with file provider)
 
+
+
+
