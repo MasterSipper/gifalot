@@ -1,124 +1,64 @@
-# Fix MySQL Port 3306 Conflict
+# Fix MySQL Port Conflict
+
+## Error
+```
+Bind for 0.0.0.0:*** failed: port is already allocated
+```
 
 ## Problem
-Port 3306 is already allocated, preventing the new MySQL container from starting.
+The test environment MySQL container is trying to bind to a port that's already in use (likely by the dev environment MySQL container).
 
-## Solution
+## Solution Options
 
-### Step 1: Find What's Using Port 3306
-**Command:**
-```bash
-docker ps -a | grep mysql
-```
+### Option 1: Stop Dev MySQL Container (If Not Needed)
 
-**Expected Result:**
-- Lists all MySQL containers (running or stopped)
-- Shows container IDs and names
-
-**Alternative - Check port directly:**
-```bash
-ss -tlnp | grep 3306
-```
-
-**Expected Result:**
-- Shows what process is using port 3306
-- May show a Docker container ID
-
-### Step 2: Stop Old MySQL Container
-**If you see an old MySQL container, stop and remove it:**
-
-**Command:**
-```bash
-docker stop <container-id-or-name>
-docker rm <container-id-or-name>
-```
-
-**Example:**
-```bash
-docker stop gif-j-backend-mysql-1
-docker rm gif-j-backend-mysql-1
-```
-
-**Or stop all old containers:**
-```bash
-docker ps -a --filter "name=mysql" --format "{{.ID}}" | xargs -r docker stop
-docker ps -a --filter "name=mysql" --format "{{.ID}}" | xargs -r docker rm
-```
-
-**Expected Result:**
-- Old container stopped and removed
-- Port 3306 is now free
-
-### Step 3: Check for Other Services Using Port 3306
-**If no Docker container is using it, check for system MySQL:**
-
-**Command:**
-```bash
-systemctl status mysql
-```
-
-**If MySQL service is running:**
-```bash
-systemctl stop mysql
-systemctl disable mysql  # Optional: prevent it from starting on boot
-```
-
-**Expected Result:**
-- System MySQL service stopped
-- Port 3306 is now free
-
-### Step 4: Verify Port is Free
-**Command:**
-```bash
-ss -tlnp | grep 3306
-```
-
-**Expected Result:**
-- No output (port is free)
-- Or shows only the new container after starting
-
-### Step 5: Start Docker Compose Services
-**Command:**
-```bash
-docker compose up -d
-```
-
-**Expected Result:**
-- All containers start successfully
-- No port conflict errors
-
-### Step 6: Verify All Containers are Running
-**Command:**
-```bash
-docker compose ps
-```
-
-**Expected Result:**
-- All containers show as "Up"
-- MySQL, Redis, and App containers are running
-
-**Check logs:**
-```bash
-docker compose logs app --tail 50
-docker compose logs mysql --tail 20
-```
-
-**Expected Result:**
-- App logs show successful startup
-- MySQL logs show database ready
-
-## Quick One-Liner Solution
-
-If you just want to stop all old containers and restart:
+If you're using external MySQL (mysql96.unoeuro.com), you might not need the MySQL container running:
 
 ```bash
-docker compose down && docker compose up -d
+# On your server, check what's using the port
+docker ps | grep mysql
+
+# Stop dev MySQL container if it exists
+docker stop services-gif-j-backend-dev-mysql-1
+docker rm services-gif-j-backend-dev-mysql-1
 ```
 
-This will:
-1. Stop and remove all containers from the current docker-compose.yml
-2. Start fresh containers
-3. Should resolve the port conflict
+### Option 2: Use Different MySQL Port for Test
 
+The test environment should use a different MySQL port. Check what port is configured:
 
+```bash
+# Check what MySQL port is set in secrets
+# MYSQL_PORT_DEV is probably 3306
 
+# For test, we could use 3307 or another port
+```
+
+### Option 3: Don't Run MySQL Container for Test
+
+Since you're using external MySQL (mysql96.unoeuro.com), the test environment might not need a MySQL container at all. But this would require modifying docker-compose.yml.
+
+## Quick Fix: Check What's Using the Port
+
+Run on your server:
+
+```bash
+# Find what's using the MySQL port
+sudo netstat -tlnp | grep 3306
+# or
+sudo ss -tlnp | grep 3306
+
+# Check running MySQL containers
+docker ps | grep mysql
+
+# Stop conflicting containers
+docker stop $(docker ps -q --filter "name=mysql")
+```
+
+## Recommended: Use External MySQL Only
+
+Since you're using mysql96.unoeuro.com, you might want to:
+1. Not run MySQL container in test environment
+2. Or use a different port for the test MySQL container (e.g., 3307)
+
+Let me know which approach you prefer!

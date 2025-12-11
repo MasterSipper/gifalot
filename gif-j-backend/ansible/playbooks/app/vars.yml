@@ -19,7 +19,7 @@ app_environment:
   MAIL_USER: '{{ MAIL_USER }}'
   MAIL_PASSWORD: '{{ MAIL_PASSWORD }}'
   REDIS_HOST: '{{ service_name_stage }}-redis'
-  REDIS_PORT: '6379'
+  REDIS_PORT: '{{ REDIS_PORT | default("6379") }}'
   REDIS_PASSWORD: '{{ REDIS_PASSWORD }}'
   MYSQL_HOST: '{{ MYSQL_HOST }}'
   MYSQL_USER: '{{ MYSQL_USER }}'
