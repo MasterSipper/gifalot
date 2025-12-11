@@ -81,7 +81,7 @@ export const Player = () => {
     
     try {
       const [catalogResponse, filesResponse] = await Promise.all([
-        axios.get(`${apiUrl}${collections}/${userIdNum}/${folderIdNum}`),
+        axios.get(`${apiUrl}${collections}/public/${userIdNum}/${folderIdNum}`),
         axios.get(`${apiUrl}${file}/${userIdNum}/${folderIdNum}`),
       ]);
 
@@ -206,9 +206,11 @@ export const Player = () => {
     }
   }, [isPublic, fetchPublicData]);
 
-  React.useEffect(() => {
-    fullScreen();
-  }, []);
+  // Don't auto-request fullscreen on load (requires user gesture)
+  // Fullscreen will be requested when user clicks play button
+  // React.useEffect(() => {
+  //   fullScreen();
+  // }, []);
 
   // Calculate total slides based on per-item templates
   const calculateTotalSlides = React.useCallback(() => {

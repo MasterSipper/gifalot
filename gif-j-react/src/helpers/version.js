@@ -3,7 +3,7 @@
 export const getVersion = () => {
   // Use REACT_APP_VERSION if set, otherwise default to package version
   // Format: "0.1.0" -> "v0.1.0"
-  const version = process.env.REACT_APP_VERSION || '1.0.7';
+  const version = process.env.REACT_APP_VERSION || '1.0.8';
   return `v${version}`;
 };
 

@@ -47,18 +47,6 @@ export class CollectionController {
     return this.collectionService.listPublicCollection(query?.date);
   }
 
-  // IMPORTANT: More specific route must come before less specific route
-  // Otherwise /collection/3/19 will match :id route first (treating 3 as id)
-  @UseGuards(OptionalJwtAccessAuthGuard)
-  @Get(':ownerId/:id')
-  public async getPublicCollection(
-    @UserParam('id') userId: number | null,
-    @Param('ownerId', ParseIntPipe) ownerId: number,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.collectionService.getPublicCollection(userId, ownerId, id);
-  }
-
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   public async getCollection(
@@ -67,6 +55,18 @@ export class CollectionController {
   ) {
     const collection = await this.collectionService.getCollection(userId, id);
     return collection.toAPI();
+  }
+
+  // IMPORTANT: This route must come after :id to avoid conflicts
+  // Use a different path pattern to ensure it doesn't conflict
+  @UseGuards(OptionalJwtAccessAuthGuard)
+  @Get('public/:ownerId/:id')
+  public async getPublicCollection(
+    @UserParam('id') userId: number | null,
+    @Param('ownerId', ParseIntPipe) ownerId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.collectionService.getPublicCollection(userId, ownerId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))
