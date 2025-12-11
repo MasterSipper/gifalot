@@ -44,18 +44,26 @@ export const Player = () => {
   const [catalogData, setCatalogData] = React.useState(null);
   const [isStop, setIsStop] = React.useState(false);
   
-  // Reset slideIndex to 0 when play starts or state changes
+  // Reset slideIndex to 0 when state changes or play starts
   React.useEffect(() => {
     if (state.length > 0) {
       setSlideIndex(0);
-      // Force carousel to go to first slide after a brief delay to ensure it's rendered
-      setTimeout(() => {
-        if (carouselRef.current) {
-          carouselRef.current.moveTo(0);
-        }
-      }, 100);
+      // Force carousel to go to first slide immediately
+      if (carouselRef.current) {
+        carouselRef.current.moveTo(0);
+      }
     }
-  }, [play, state.length]);
+  }, [state.length]);
+
+  // When play starts, ensure we're at index 0
+  React.useEffect(() => {
+    if (play && state.length > 0) {
+      setSlideIndex(0);
+      if (carouselRef.current) {
+        carouselRef.current.moveTo(0);
+      }
+    }
+  }, [play]);
 
   const carouselRef = React.useRef();
 
@@ -196,6 +204,10 @@ export const Player = () => {
       setState(normalized);
       setCatalogData(folderItem);
       setError(false);
+      // Auto-start play when coming from dashboard (private player)
+      if (!play) {
+        setPlay(true);
+      }
     }
   }, [isPrivate, folderImages, folderItem]);
 
@@ -597,11 +609,12 @@ export const Player = () => {
           }
         }}
         selectedItem={slideIndex}
+        key={`carousel-${state.length}-${slideIndex}`} // Force re-render when state or index changes
       >
         {renderData()}
       </Carousel>
 
-      {!isFullscreen && !error && !isPrivateError && (
+      {!isFullscreen && !error && !isPrivateError && !play && (
         <PlayerModal
           handleChangePlay={setPlay}
           folderId={folderId}
