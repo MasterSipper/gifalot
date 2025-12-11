@@ -2,6 +2,8 @@
 
 A full-stack web application for managing and organizing GIF and video collections. Built with NestJS (backend) and React (frontend).
 
+<!-- Trigger test deployment -->
+
 ## Project Structure
 
 ```
@@ -237,5 +239,6 @@ See [CONTABO_SETUP_GUIDE.md](./CONTABO_SETUP_GUIDE.md) for detailed instructions
 ## Contributing
 
 [Add contributing guidelines here]
-#   T e s t   d e p l o y m e n t  
+#   T e s t   d e p l o y m e n t 
+ 
  
