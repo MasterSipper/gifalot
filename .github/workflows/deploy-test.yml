@@ -48,7 +48,7 @@ jobs:
             --extra-vars "MYSQL_DB=${{ secrets.MYSQL_DB_DEV }}_test"
             --extra-vars "MYSQL_USER=${{ secrets.MYSQL_USER_DEV }}"
             --extra-vars "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD_DEV }}"
-            --extra-vars "MYSQL_PORT=3307"
+            --extra-vars "MYSQL_PORT=${{ secrets.MYSQL_PORT_DEV }}"
             --extra-vars "JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET_DEV }}"
             --extra-vars "JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET_DEV }}"
             --extra-vars "CORS_ORIGINS=https://dev.gifalot.com,https://test.gifalot.com"

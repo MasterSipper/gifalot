@@ -18,7 +18,7 @@ app_environment:
   GIPHY_API_KEY: '{{ GIPHY_API_KEY }}'
   MAIL_USER: '{{ MAIL_USER }}'
   MAIL_PASSWORD: '{{ MAIL_PASSWORD }}'
-  REDIS_HOST: '{{ service_name_stage }}-redis'
+  REDIS_HOST: 'localhost'
   REDIS_PORT: '{{ REDIS_PORT | default("6379") }}'
   REDIS_PASSWORD: '{{ REDIS_PASSWORD }}'
   MYSQL_HOST: '{{ MYSQL_HOST }}'
