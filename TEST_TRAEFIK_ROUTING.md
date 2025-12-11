@@ -83,3 +83,4 @@ Try updating docker-compose.yml to use the public IP:
 - 'traefik.http.services.${SERVICE_NAME_STAGE}.loadbalancer.server.url=http://38.242.204.63:3333'
 ```
 
+

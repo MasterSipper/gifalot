@@ -36,3 +36,4 @@ If direct connection works but TypeORM doesn't, we might need to:
 2. **Use different connection options**
 3. **Contact Simply support** for specific connection requirements
 
+

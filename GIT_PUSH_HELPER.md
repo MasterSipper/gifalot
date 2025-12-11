@@ -59,3 +59,4 @@ If command line is unreliable:
 2. Or use `git gui` command
 3. Or use VS Code's Source Control panel
 
+
