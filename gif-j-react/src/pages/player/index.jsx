@@ -43,6 +43,7 @@ export const Player = () => {
   const [loading, setLoading] = React.useState(false);
   const [catalogData, setCatalogData] = React.useState(null);
   const [isStop, setIsStop] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
   
   // Reset slideIndex to 0 when state changes or play starts
   React.useEffect(() => {
@@ -318,14 +319,25 @@ export const Player = () => {
         carouselRef?.current?.onClickPrev();
       } else if (e.code === "Escape") {
         e.preventDefault();
-        handleClose();
+        if (showModal) {
+          // If modal is showing, close and go to dashboard
+          handleClose();
+        } else {
+          // If modal is not showing, pause and show modal
+          setPlay(false);
+          setIsStop(true);
+          setShowModal(true);
+        }
       } else if (e.code === "Space") {
         e.preventDefault();
         setIsStop(!isStop);
+        setPlay(!isStop);
         if (isStop) {
           carouselRef?.current?.autoPlay();
+          setShowModal(false);
         } else {
           carouselRef?.current?.clearAutoPlay();
+          setShowModal(true);
         }
       }
     };
@@ -334,7 +346,7 @@ export const Player = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isStop, handleClose]);
+  }, [isStop, showModal, handleClose]);
 
   const renderData = () => {
     const slides = [];
@@ -618,9 +630,13 @@ export const Player = () => {
         {renderData()}
       </Carousel>
 
-      {!isFullscreen && !error && !isPrivateError && !play && (
+      {!isFullscreen && !error && !isPrivateError && showModal && (
         <PlayerModal
-          handleChangePlay={setPlay}
+          handleChangePlay={(newPlay) => {
+            setPlay(newPlay);
+            setShowModal(false);
+            setIsStop(!newPlay);
+          }}
           folderId={folderId}
           collectionName={collectionName}
           isPublic={isPublic}
