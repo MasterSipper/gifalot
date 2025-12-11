@@ -5,6 +5,6 @@
     project_src: '{{ remote_dir_path }}/{{ service_name }}'
     scale: 'app={{ scale }}'
     recreate: never
-    build: true
+    build: 'always'
     remove_orphans: true
   environment: '{{ app_environment }}'
