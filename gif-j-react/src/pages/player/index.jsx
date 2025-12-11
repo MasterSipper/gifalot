@@ -207,6 +207,10 @@ export const Player = () => {
       // Auto-start play when coming from dashboard (private player)
       if (!play) {
         setPlay(true);
+        // Request fullscreen when auto-starting (this is triggered by navigation, which is a user gesture)
+        setTimeout(() => {
+          fullScreen();
+        }, 100);
       }
     }
   }, [isPrivate, folderImages, folderItem]);
