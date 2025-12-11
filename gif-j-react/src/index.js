@@ -9,6 +9,7 @@ import { captchaKey } from "./static/captchaKey";
 
 import "./index.css";
 
+// Trigger test deployment
 // Global error handler to catch all errors
 window.addEventListener('error', (event) => {
   console.error('🚨 GLOBAL ERROR:', event.error);
