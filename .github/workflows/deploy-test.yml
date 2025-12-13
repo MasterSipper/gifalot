@@ -45,7 +45,7 @@ jobs:
             --extra-vars "REDIS_PORT=6380"
             --extra-vars "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD_DEV }}"
             --extra-vars "MYSQL_HOST=${{ secrets.MYSQL_HOST_DEV }}"
-            --extra-vars "MYSQL_DB=${{ secrets.MYSQL_DB_DEV }}_test"
+            --extra-vars "MYSQL_DB=${{ secrets.MYSQL_DB_DEV }}"
             --extra-vars "MYSQL_USER=${{ secrets.MYSQL_USER_DEV }}"
             --extra-vars "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD_DEV }}"
             --extra-vars "MYSQL_PORT=${{ secrets.MYSQL_PORT_DEV }}"
