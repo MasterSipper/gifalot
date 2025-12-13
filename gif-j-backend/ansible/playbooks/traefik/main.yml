@@ -33,11 +33,17 @@
 
     - name: Find and stop any containers using port 80
       ansible.builtin.shell: |
-        # Find containers using port 80
-        CONTAINERS=$(docker ps --filter "publish=80" --format "{{ '{{' }}.ID{{ '}}' }}")
+        # Find containers using port 80 (multiple ways to catch them)
+        CONTAINERS=$(docker ps -a --filter "publish=80" --format "{{ '{{' }}.ID{{ '}}' }}" 2>/dev/null || true)
         if [ -n "$CONTAINERS" ]; then
-          echo "$CONTAINERS" | xargs docker stop
-          echo "$CONTAINERS" | xargs docker rm -f
+          echo "$CONTAINERS" | xargs -r docker stop 2>/dev/null || true
+          echo "$CONTAINERS" | xargs -r docker rm -f 2>/dev/null || true
+        fi
+        # Also check for any traefik containers
+        TRAEFIK_CONTAINERS=$(docker ps -a --filter "name=traefik" --format "{{ '{{' }}.ID{{ '}}' }}" 2>/dev/null || true)
+        if [ -n "$TRAEFIK_CONTAINERS" ]; then
+          echo "$TRAEFIK_CONTAINERS" | xargs -r docker stop 2>/dev/null || true
+          echo "$TRAEFIK_CONTAINERS" | xargs -r docker rm -f 2>/dev/null || true
         fi
       ignore_errors: true
       changed_when: false
