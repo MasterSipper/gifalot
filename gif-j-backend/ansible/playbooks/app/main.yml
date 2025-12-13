@@ -35,6 +35,16 @@
         driver: bridge
       when: docker_network_create
 
+    - name: Stop and remove existing containers using docker compose down
+      ansible.builtin.shell: |
+        cd {{ remote_dir_path }}/{{ service_name }} && docker compose --project-name {{ category_name }}-{{ service_name_stage }} down || true
+      ignore_errors: true
+      changed_when: false
+
+    - name: Wait a moment for ports to be released
+      ansible.builtin.pause:
+        seconds: 2
+
     - name: Run Docker compose (scale up)
       ansible.builtin.include_tasks:
         file: tasks/run-docker-compose.yml
