@@ -17,16 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Run Playbook - docker
-        uses: dawidd6/action-ansible-playbook@9c825aa4d5c39496e71448bb7ae16a71f5fc75e1
-        with:
-          playbook: gif-j-backend/ansible/playbooks/docker/main.yml
-          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
-          inventory: |
-            [dev_infrastructure]
-            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
-          options: |
-            --extra-vars "ansible_sudo_pass=${{ secrets.ANSIBLE_PASSWORD_DEV }}"
+      # Skip docker playbook if Docker is already installed (to avoid sudo password issues)
+      # Uncomment below if you need to install/configure Docker
+      # - name: Run Playbook - docker
+      #   uses: dawidd6/action-ansible-playbook@9c825aa4d5c39496e71448bb7ae16a71f5fc75e1
+      #   with:
+      #     playbook: gif-j-backend/ansible/playbooks/docker/main.yml
+      #     key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
+      #     inventory: |
+      #       [dev_infrastructure]
+      #       vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+      #     options: |
+      #       --extra-vars "ansible_sudo_pass=${{ secrets.ANSIBLE_PASSWORD_DEV }}"
 
       - name: Run Playbook - traefik
         uses: dawidd6/action-ansible-playbook@9c825aa4d5c39496e71448bb7ae16a71f5fc75e1
