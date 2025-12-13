@@ -26,7 +26,7 @@
         driver: bridge
 
     - name: Run Docker compose
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_name: '{{ category_name }}-{{ service_name }}'
         project_src: '{{ remote_path }}'
         remove_orphans: true
