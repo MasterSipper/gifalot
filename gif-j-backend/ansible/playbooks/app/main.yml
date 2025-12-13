@@ -11,6 +11,15 @@
         path: '{{ remote_dir_path }}'
         state: directory
         mode: 0750
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+
+    - name: Fix ownership of existing directory contents
+      ansible.builtin.shell: |
+        chown -R {{ ansible_user }}:{{ ansible_user }} {{ remote_dir_path }} || true
+        chmod -R u+rwX {{ remote_dir_path }} || true
+      ignore_errors: true
+      changed_when: false
 
     - name: Sync source
       ansible.builtin.synchronize:
