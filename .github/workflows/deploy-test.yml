@@ -74,7 +74,7 @@ jobs:
       - name: Build Frontend
         working-directory: gif-j-react
         env:
-          REACT_APP_API_URL: https://test.gifalot.com/gif-j/
+          REACT_APP_API_URL: http://test.gifalot.com/gif-j/
         run: npm run build
 
       - name: Deploy Frontend to Server via SCP
