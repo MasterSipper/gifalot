@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const PORT = process.env.PORT || 3000;
 
-  const app = await NestFactory.create(AppModule); // Trigger dev deployment
+  const app = await NestFactory.create(AppModule); // Trigger dev deployment - HTTP API URL fix
 
   // Configure CORS for production
   const allowedOrigins = process.env.CORS_ORIGINS
