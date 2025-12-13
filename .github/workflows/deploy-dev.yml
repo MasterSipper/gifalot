@@ -70,3 +70,36 @@ jobs:
             --extra-vars "JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET_DEV }}"
             --extra-vars "CORS_ORIGINS=https://dev.gifalot.com,https://test.gifalot.com"
 
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Frontend Dependencies
+        working-directory: gif-j-react
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: gif-j-react
+        env:
+          REACT_APP_API_URL: https://dev.gifalot.com/gif-j/
+        run: npm run build
+
+      - name: Deploy Frontend to Server via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.ANSIBLE_HOST_VPS1_DEV }}
+          port: ${{ secrets.ANSIBLE_PORT_DEV }}
+          username: ansible
+          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
+          source: "gif-j-react/build/*"
+          target: "/var/www/gifalot-frontend-dev/"
+          strip_components: 1
+
