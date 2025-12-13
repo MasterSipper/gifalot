@@ -48,21 +48,25 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
           inventory: |
             [dev_infrastructure]
-            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible
+            vps1   ansible_host=${{ secrets.ANSIBLE_HOST_VPS1_DEV }}   ansible_port=${{ secrets.ANSIBLE_PORT_DEV }}   ansible_user=ansible   ansible_python_interpreter=/usr/bin/python3.9
           options: |
             --extra-vars "STAGE=dev"
+            --extra-vars "PORT=3333"
             --extra-vars "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}"
             --extra-vars "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_SECRET_DEV }}"
             --extra-vars "GOOGLE_RECAPTCHA_SECRET_KEY=${{ secrets.GOOGLE_RECAPTCHA_SECRET_KEY_DEV }}"
             --extra-vars "GIPHY_API_KEY=${{ secrets.GIPHY_API_KEY_DEV }}"
             --extra-vars "MAIL_USER=${{ secrets.MAIL_USER_DEV }}"
             --extra-vars "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD_DEV }}"
-            --extra-vars "REDIS_HOST=${{ secrets.REDIS_HOST_DEV }}"
+            --extra-vars "REDIS_HOST=localhost"
+            --extra-vars "REDIS_PORT=6379"
             --extra-vars "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD_DEV }}"
-            --extra-vars "POSTGRES_HOST=${{ secrets.POSTGRES_HOST_DEV }}"
-            --extra-vars "POSTGRES_DB=${{ secrets.POSTGRES_DB_DEV }}"
-            --extra-vars "POSTGRES_USER=${{ secrets.POSTGRES_USER_DEV }}"
-            --extra-vars "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD_DEV }}"
+            --extra-vars "MYSQL_HOST=${{ secrets.MYSQL_HOST_DEV }}"
+            --extra-vars "MYSQL_DB=${{ secrets.MYSQL_DB_DEV }}"
+            --extra-vars "MYSQL_USER=${{ secrets.MYSQL_USER_DEV }}"
+            --extra-vars "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD_DEV }}"
+            --extra-vars "MYSQL_PORT=${{ secrets.MYSQL_PORT_DEV }}"
             --extra-vars "JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET_DEV }}"
             --extra-vars "JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET_DEV }}"
+            --extra-vars "CORS_ORIGINS=https://dev.gifalot.com,https://test.gifalot.com"
 
