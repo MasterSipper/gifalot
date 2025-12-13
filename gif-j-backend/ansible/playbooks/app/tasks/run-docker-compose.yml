@@ -1,10 +1,10 @@
 ---
 - name: Run Docker compose
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_name: '{{ category_name }}-{{ service_name_stage }}'
     project_src: '{{ remote_dir_path }}/{{ service_name }}'
     scale: 'app={{ scale }}'
-    recreate: never
-    build: true
+    recreate: always
+    build: 'always'
     remove_orphans: true
   environment: '{{ app_environment }}'
