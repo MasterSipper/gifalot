@@ -64,7 +64,7 @@ export const Player = () => {
         carouselRef.current.moveTo(0);
       }
     }
-  }, [play]);
+  }, [play, state.length]);
 
   const carouselRef = React.useRef();
 
@@ -214,7 +214,7 @@ export const Player = () => {
         }, 100);
       }
     }
-  }, [isPrivate, folderImages, folderItem]);
+  }, [isPrivate, folderImages, folderItem, play]);
 
   // Fetch public data
   React.useEffect(() => {
