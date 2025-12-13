@@ -31,9 +31,20 @@
       ignore_errors: true
       changed_when: false
 
+    - name: Find and stop any containers using port 80
+      ansible.builtin.shell: |
+        # Find containers using port 80
+        CONTAINERS=$(docker ps --filter "publish=80" --format "{{ '{{' }}.ID{{ '}}' }}")
+        if [ -n "$CONTAINERS" ]; then
+          echo "$CONTAINERS" | xargs docker stop
+          echo "$CONTAINERS" | xargs docker rm -f
+        fi
+      ignore_errors: true
+      changed_when: false
+
     - name: Wait a moment for port to be released
       ansible.builtin.pause:
-        seconds: 2
+        seconds: 3
 
     - name: Run Docker compose
       community.docker.docker_compose_v2:
