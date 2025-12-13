@@ -25,6 +25,13 @@
         name: 'infrastructure-traefik'
         driver: bridge
 
+    - name: Stop and remove existing Traefik containers
+      ansible.builtin.shell: |
+        docker ps -a --filter "name={{ category_name }}-{{ service_name }}-traefik" --format "{{ '{{' }}.ID{{ '}}' }}" | xargs -r docker stop
+        docker ps -a --filter "name={{ category_name }}-{{ service_name }}-traefik" --format "{{ '{{' }}.ID{{ '}}' }}" | xargs -r docker rm -f
+      ignore_errors: true
+      changed_when: false
+
     - name: Run Docker compose
       community.docker.docker_compose_v2:
         project_name: '{{ category_name }}-{{ service_name }}'
