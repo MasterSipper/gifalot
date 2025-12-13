@@ -3,6 +3,7 @@ version: '3.7'
 services:
   traefik:
     image: 'traefik:v2.9'
+    network_mode: "host"
     command:
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
@@ -16,22 +17,12 @@ services:
 #       - '--certificatesresolvers.le.acme.email=${ACME_EMAIL}'
 #       - '--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json'
 #       - '--certificatesresolvers.le.acme.tlschallenge=true'
-    network_mode: "host"
     labels:
 #       - 'traefik.http.routers.traefik.tls=true'
 #       - 'traefik.http.routers.traefik.tls.certresolver=le'
       - 'traefik.http.routers.traefik.entrypoints=web'
-#    ports:  # Not needed with host network mode
-#      - '80:80'
-#       - '443:443'
-#    networks:  # Not needed with host network mode
-#      - 'infrastructure-traefik'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
       - '/home/ansible/infrastructure/traefik/dynamic:/etc/traefik/dynamic:ro'
 #       - './letsencrypt:/letsencrypt'
     restart: 'always'
-
-networks:
-  infrastructure-traefik:
-    external: true
