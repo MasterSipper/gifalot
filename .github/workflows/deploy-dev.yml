@@ -100,6 +100,6 @@ jobs:
           username: ansible
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY_DEV }}
           source: "gif-j-react/build/*"
-          target: "/var/www/gifalot-frontend-dev/"
-          strip_components: 1
+          target: "/var/www/gifalot-frontend-dev/build/"
+          strip_components: 2
 
