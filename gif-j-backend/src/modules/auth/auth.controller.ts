@@ -12,7 +12,7 @@ import { AuthResetPasswordConfirmDto } from './dto/reset-password-confirm';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Recaptcha({ action: 'register' })
+  // @Recaptcha({ action: 'register' }) // Temporarily disabled for dev/testing
   @Post('register')
   public async register(@Body() body: AuthRegisterDto) {
     return this.authService.register(body);

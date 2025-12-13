@@ -60,7 +60,7 @@ import { AppController } from './app.controller';
         secretKey: configService.get<string>('GOOGLE_RECAPTCHA_SECRET_KEY'),
         response: (req) => req.headers['recaptcha'],
         actions: ['register', 'login'],
-        skipIf: process.env.STAGE === 'local',
+        skipIf: process.env.STAGE === 'local' || process.env.STAGE === 'dev',
         score: 0.6,
       }),
     }),
